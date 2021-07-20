@@ -1,0 +1,32 @@
+{
+  "annotators": ["tpm","pki"],
+  "hash": {
+    "type": "sha256"
+  },
+  "signature": {
+    "public": {
+      "type": "ed25519",
+      "path": "../../test/keys/ed25519/public.key"
+    },
+    "private": {
+      "type": "ed25519",
+      "path": "../../test/keys/ed25519/private.key"
+    }
+  },
+  "stream": {
+    "type": "mqtt",
+    "config": {
+      "clientId": "sdk-test",
+      "qos": 0,
+      "user": "mosquitto",
+      "password": "",
+      "provider": {
+        "host": "localhost",
+        "protocol": "tcp",
+        "port": 1883
+      },
+      "cleanness": false,
+      "topics": ["sdk-test-topic"]
+    }
+  }
+}
