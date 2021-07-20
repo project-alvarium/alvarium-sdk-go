@@ -1,3 +1,7 @@
+#Ignore working directories used by IDEs, etc
+.idea/
+.vscode/
+
 # Binaries for programs and plugins
 *.exe
 *.exe~
