@@ -64,10 +64,8 @@ func (p *mqttPublisher) Publish(msg message.PublishWrapper) error {
 	if err != nil {
 		return err
 	}
-	b, err := json.Marshal(msg)
-	if err != nil {
-		return err
-	}
+
+	b, _ := json.Marshal(newMqttWrapper(msg))
 	// publish to all topics
 	for _, topic := range p.endpoint.Topics {
 		p.logger.Write(logging.DebugLevel, fmt.Sprintf("attempting publish, topic %s %s", topic, string(b)))
@@ -90,4 +88,19 @@ func (p *mqttPublisher) reconnect() error {
 		}
 	}
 	return nil
+}
+
+type mqttWrapper struct {
+	Action      message.SdkAction `json:"action,omitempty"`
+	MessageType string            `json:"messageType,omitempty"`
+	Content     []byte            `json:"content,omitempty"`
+}
+
+func newMqttWrapper(msg message.PublishWrapper) mqttWrapper {
+	b, _ := json.Marshal(msg.Content)
+	return mqttWrapper{
+		Action:      msg.Action,
+		MessageType: msg.MessageType,
+		Content:     b,
+	}
 }

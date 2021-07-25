@@ -26,7 +26,7 @@ type Annotation struct {
 	Key       string         `json:"key,omitempty"`       // Key is the hash value of the data being annotated
 	Hash      HashType       `json:"hash,omitempty"`      // Hash identifies which algorithm was used to construct the hash
 	Host      string         `json:"host,omitempty"`      // Host is the hostname of the node making the annotation
-	Kind      AnnotationType `json:"type,omitempty"`      // Kind indicates what kind of annotation this is
+	Kind      AnnotationType `json:"kind,omitempty"`      // Kind indicates what kind of annotation this is
 	Signature string         `json:"signature,omitempty"` // Signature contains the signature of the party making the annotation
 	Satisfied bool           `json:"satisfied"`           // Satisfied indicates whether the criteria defining the annotation were fulfilled
 	Timestamp time.Time      `json:"timestamp,omitempty"` // Timestamp indicates when the annotation was created
@@ -72,7 +72,7 @@ func (a *Annotation) UnmarshalJSON(data []byte) (err error) {
 	}
 
 	if !x.Kind.Validate() {
-		return fmt.Errorf("invalid AnnotationType value provided %s", x.Hash)
+		return fmt.Errorf("invalid AnnotationType value provided %s", x.Kind)
 	}
 
 	a.Id = x.Id
