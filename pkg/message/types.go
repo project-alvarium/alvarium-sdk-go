@@ -33,3 +33,9 @@ type PublishWrapper struct {
 	MessageType string      `json:"messageType,omitempty"`
 	Content     interface{} `json:"content,omitempty"`
 }
+
+type SubscribeWrapper struct {
+	Action      SdkAction `json:"action,omitempty"`
+	MessageType string    `json:"messageType,omitempty"`
+	Content     []byte    `json:"content,omitempty"`
+}
