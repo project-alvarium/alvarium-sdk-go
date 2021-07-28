@@ -21,6 +21,9 @@ import (
 	"os"
 )
 
+// Default path to a TPM 2.0 device (https://wiki.archlinux.org/title/Trusted_Platform_Module)
+const tpmPath string = "/dev/tpm0"
+
 // TpmAnnotator is used to attest whether or not the host machine has TPM capability for managing secrets
 type TpmAnnotator struct {
 	hash contracts.HashType
@@ -39,11 +42,20 @@ func NewTpmAnnotator(cfg config.SdkInfo) interfaces.Annotator {
 func (a *TpmAnnotator) Do(ctx context.Context, data []byte) (contracts.Annotation, error) {
 	key := deriveHash(a.hash, data)
 	hostname, _ := os.Hostname()
+	isSatisfied := false
 
-	// For now, the satisfied property will always be false until I can get virtual TPM support in the lab
-	// TODO: On the other hand, I could implement the TPM check with the understanding it will be false in any
-	// deployment without a TPM.
-	annotation := contracts.NewAnnotation(key, a.hash, hostname, a.kind, false)
+	// If mounted path exists, check that it's either a device or a socket (emulator)
+	// This logic based on code found in gp-tpm module.
+	// https://github.com/google/go-tpm/blob/b3942ee5b15a7bd19e6419d5903e6e64fbb3d4ba/tpmutil/run_other.go#L29
+	fi, err := os.Stat(tpmPath)
+	if err == nil {
+		// TPM mounted at default path
+		if fi.Mode()&os.ModeDevice == 0 || fi.Mode()&os.ModeSocket == 0 {
+			isSatisfied = true
+		}
+	}
+
+	annotation := contracts.NewAnnotation(key, a.hash, hostname, a.kind, isSatisfied)
 	sig, err := signAnnotation(a.sign.PrivateKey, annotation)
 	if err != nil {
 		return contracts.Annotation{}, err
