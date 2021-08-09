@@ -91,7 +91,7 @@ func TestPkiAnnotator_Do(t *testing.T) {
 					t.Error("signature not verified")
 				}
 				if tt.name == "pki empty signature" || tt.name == "pki invalid signature" {
-					if anno.Satisfied {
+					if anno.IsSatisfied {
 						t.Errorf("satisfied should be false")
 					}
 				}
