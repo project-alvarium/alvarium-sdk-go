@@ -75,7 +75,7 @@ func TestSignAnnotation(t *testing.T) {
 		signature   string
 		expectError bool
 	}{
-		{"valid ed25519 signature", private, a, "361f6e30784b144410a36762bda3f7911873c3743c9e6c1c679c6b4f7f3cd7b676a2b2b961c772a1680181538dc59b440b5531529190c934c2f92e0290d62a04", false},
+		{"valid ed25519 signature", private, a, "dafcee0a1844b9c5c0db87252067afc06853afefa14b1711a7c24a6eabc6f6b76b91f8aae2ce54f74b54500dbaf303fbb23dc550e151cfe03cef68ae26a22306", false},
 		{"invalid key type", invalid, a, "abcdef", true},
 	}
 	for _, tt := range tests {

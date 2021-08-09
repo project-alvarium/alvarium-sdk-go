@@ -22,14 +22,14 @@ import (
 
 // Annotation represents an individual criterion of evaluation in regard to a piece of data
 type Annotation struct {
-	Id        ulid.ULID      `json:"id,omitempty"`        // Id should probably be a ULID -- uniquely identifies the annotation itself
-	Key       string         `json:"key,omitempty"`       // Key is the hash value of the data being annotated
-	Hash      HashType       `json:"hash,omitempty"`      // Hash identifies which algorithm was used to construct the hash
-	Host      string         `json:"host,omitempty"`      // Host is the hostname of the node making the annotation
-	Kind      AnnotationType `json:"kind,omitempty"`      // Kind indicates what kind of annotation this is
-	Signature string         `json:"signature,omitempty"` // Signature contains the signature of the party making the annotation
-	Satisfied bool           `json:"satisfied"`           // Satisfied indicates whether the criteria defining the annotation were fulfilled
-	Timestamp time.Time      `json:"timestamp,omitempty"` // Timestamp indicates when the annotation was created
+	Id          ulid.ULID      `json:"id,omitempty"`        // Id should probably be a ULID -- uniquely identifies the annotation itself
+	Key         string         `json:"key,omitempty"`       // Key is the hash value of the data being annotated
+	Hash        HashType       `json:"hash,omitempty"`      // Hash identifies which algorithm was used to construct the hash
+	Host        string         `json:"host,omitempty"`      // Host is the hostname of the node making the annotation
+	Kind        AnnotationType `json:"kind,omitempty"`      // Kind indicates what kind of annotation this is
+	Signature   string         `json:"signature,omitempty"` // Signature contains the signature of the party making the annotation
+	IsSatisfied bool           `json:"isSatisfied"`         // IsSatisfied indicates whether the criteria defining the annotation were fulfilled
+	Timestamp   time.Time      `json:"timestamp,omitempty"` // Timestamp indicates when the annotation was created
 }
 
 // AnnotationList is an envelope for zero to many annotations
@@ -40,26 +40,26 @@ type AnnotationList struct {
 // NewAnnotation is the constructor for an Annotation instance.
 func NewAnnotation(key string, hash HashType, host string, kind AnnotationType, satisfied bool) Annotation {
 	return Annotation{
-		Id:        NewULID(),
-		Key:       key,
-		Hash:      hash,
-		Host:      host,
-		Kind:      kind,
-		Satisfied: satisfied,
-		Timestamp: time.Now(),
+		Id:          NewULID(),
+		Key:         key,
+		Hash:        hash,
+		Host:        host,
+		Kind:        kind,
+		IsSatisfied: satisfied,
+		Timestamp:   time.Now(),
 	}
 }
 
 func (a *Annotation) UnmarshalJSON(data []byte) (err error) {
 	type Alias struct {
-		Id        ulid.ULID
-		Key       string
-		Hash      HashType
-		Host      string
-		Kind      AnnotationType
-		Signature string
-		Satisfied bool
-		Timestamp time.Time
+		Id          ulid.ULID
+		Key         string
+		Hash        HashType
+		Host        string
+		Kind        AnnotationType
+		Signature   string
+		IsSatisfied bool
+		Timestamp   time.Time
 	}
 	x := Alias{}
 	// Error with unmarshaling
@@ -81,7 +81,7 @@ func (a *Annotation) UnmarshalJSON(data []byte) (err error) {
 	a.Host = x.Host
 	a.Kind = x.Kind
 	a.Signature = x.Signature
-	a.Satisfied = x.Satisfied
+	a.IsSatisfied = x.IsSatisfied
 	a.Timestamp = x.Timestamp
 	return nil
 }
