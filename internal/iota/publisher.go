@@ -63,12 +63,14 @@ func NewIotaPublisher(cfg config.IotaStreamConfig, logger logInterface.Logger) (
 
 func (p *iotaPublisher) Connect() error {
 	// Generate Transport client
-	transport := C.tsp_client_new_from_url(C.CString(p.cfg.TangleNode.Uri()))
+	transport := C.transport_client_new_from_url(C.CString(p.cfg.TangleNode.Uri()))
 	p.logger.Write(logging.DebugLevel, fmt.Sprintf("transport established %s", p.cfg.TangleNode.Uri()))
 
 	// Generate Subscriber instance
-	p.subscriber = C.sub_new(C.CString(p.seed), C.CString(p.cfg.Encoding), 1024, transport)
-	p.logger.Write(logging.DebugLevel, fmt.Sprintf("subscriber established seed=%s encoding=%s", p.seed, p.cfg.Encoding))
+	cErr := C.sub_new(&p.subscriber, C.CString(p.seed), transport)
+	p.logger.Write(logging.DebugLevel, fmt.Sprintf(get_error(cErr)))
+	p.logger.Write(logging.DebugLevel, fmt.Sprintf("subscriber established seed=%s", p.seed))
+
 	// Process announcement message
 	rawId, err := p.getAnnouncementId(p.cfg.Provider.Uri())
 	if err != nil {
@@ -76,11 +78,17 @@ func (p *iotaPublisher) Connect() error {
 	}
 
 	address := C.address_from_string(C.CString(rawId))
-	C.sub_receive_announce(p.subscriber, address)
+	cErr = C.sub_receive_announce(p.subscriber, address)
+	p.logger.Write(logging.DebugLevel, fmt.Sprintf(get_error(cErr)))
 
 	// Fetch sub link and pk for subscription
-	subLink := C.sub_send_subscribe(p.subscriber, address)
-	subPk := C.sub_get_public_key(p.subscriber)
+	var subLink *C.address_t
+	var subPk *C.public_key_t
+
+	cErr = C.sub_send_subscribe(&subLink, p.subscriber, address)
+	p.logger.Write(logging.DebugLevel, fmt.Sprintf(get_error(cErr)))
+	cErr = C.sub_get_public_key(&subPk, p.subscriber)
+	p.logger.Write(logging.DebugLevel, fmt.Sprintf(get_error(cErr)))
 
 	subIdStr := C.get_address_id_str(subLink)
 	subPkStr := C.public_key_to_string(subPk)
@@ -113,14 +121,17 @@ func (p *iotaPublisher) Publish(msg message.PublishWrapper) error {
 	messageLen := len(string(b))
 
 	p.logger.Write(logging.DebugLevel, fmt.Sprintf("attempting to publish %s", string(b)))
-	msgLinks := C.sub_send_signed_packet(
+	var msgLinks C.message_links_t
+	cErr := C.sub_send_signed_packet(
+		&msgLinks,
 		p.subscriber,
 		*p.keyload,
 		nil, 0,
 		(*C.uchar)(messageBytes), C.size_t(messageLen))
+	p.logger.Write(logging.DebugLevel, fmt.Sprintf(get_error(cErr)))
 
 	var addrLink *C.address_t
-	addrLink = msgLinks.seq_link //I've also tried msg_link
+	addrLink = msgLinks.msg_link
 
 	inst := C.get_address_inst_str(addrLink)
 	id := C.get_address_id_str(addrLink)
@@ -139,20 +150,26 @@ func (p *iotaPublisher) Close() error {
 
 func (p *iotaPublisher) awaitKeyLoad() *C.message_links_t {
 	var keyload *C.message_links_t
+	var msgIds *C.next_msg_ids_t
 	for { // TODO: This should timeout after a configurable period
 		// Gen next message ids to look for existing messages
-		msgIds := C.sub_gen_next_msg_ids(p.subscriber)
+		cErr := C.sub_gen_next_msg_ids(&msgIds, p.subscriber)
+		p.logger.Write(logging.DebugLevel, fmt.Sprintf(get_error(cErr)))
+
 		// Search for keyload message from these ids and try to process it
-		keyload = C.sub_receive_keyload_from_ids(p.subscriber, msgIds)
+		cErr = C.sub_receive_keyload_from_ids(keyload, p.subscriber, msgIds)
+		p.logger.Write(logging.DebugLevel, fmt.Sprintf(get_error(cErr)))
+
 		// Free memory for c msgids object
 		C.drop_next_msg_ids(msgIds)
 
-		if keyload != nil {
+		if cErr != C.ERR_OK {
+			p.logger.Write(logging.DebugLevel, "Keyload not found yet... Checking again...")
+			// Loop until keyload is found and processed
+			time.Sleep(1000 * time.Millisecond)
+		} else {
 			p.logger.Write(logging.DebugLevel, "obtained keyload successfully")
 			break
-		} else {
-			// Loop until keyload is found and processed
-			time.Sleep(500 * time.Millisecond)
 		}
 	}
 	return keyload
@@ -202,4 +219,19 @@ func sendSubscriptionIdToAuthor(url string, body []byte) error {
 type subscriptionRequest struct {
 	MsgId string `json:"msgid"`
 	Pk    string `json:"pk"`
+}
+
+func get_error(err C.err_t) string {
+	var e = "Unknown Error"
+	switch err {
+	case C.ERR_OK:
+		e = "Operation completed successfully"
+	case C.ERR_OPERATION_FAILED:
+		e = "The operation failed to complete"
+	case C.ERR_NULL_ARGUMENT:
+		e = "The function was passed a null argument"
+	case C.ERR_BAD_ARGUMENT:
+		e = "The function was passed a bad argument"
+	}
+	return e
 }
