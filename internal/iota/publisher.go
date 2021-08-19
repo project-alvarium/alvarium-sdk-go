@@ -22,6 +22,7 @@ import "C"
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/DyrellC/alvarium-sdk-go/pkg/config"
 	"github.com/DyrellC/alvarium-sdk-go/pkg/interfaces"
@@ -80,36 +81,40 @@ func (p *iotaPublisher) Connect() error {
 	address := C.address_from_string(C.CString(rawId))
 	cErr = C.sub_receive_announce(p.subscriber, address)
 	p.logger.Write(logging.DebugLevel, fmt.Sprintf(get_error(cErr)))
+	if cErr == C.ERR_OK {
+		// Fetch sub link and pk for subscription
+		var subLink *C.address_t
+		var subPk *C.public_key_t
 
-	// Fetch sub link and pk for subscription
-	var subLink *C.address_t
-	var subPk *C.public_key_t
+		cErr = C.sub_send_subscribe(&subLink, p.subscriber, address)
+		p.logger.Write(logging.DebugLevel, fmt.Sprintf(get_error(cErr)))
+		if cErr == C.ERR_OK {
+			cErr = C.sub_get_public_key(&subPk, p.subscriber)
+			p.logger.Write(logging.DebugLevel, fmt.Sprintf(get_error(cErr)))
+			if cErr == C.ERR_OK {
+				subIdStr := C.get_address_id_str(subLink)
+				subPkStr := C.public_key_to_string(subPk)
 
-	cErr = C.sub_send_subscribe(&subLink, p.subscriber, address)
-	p.logger.Write(logging.DebugLevel, fmt.Sprintf(get_error(cErr)))
-	cErr = C.sub_get_public_key(&subPk, p.subscriber)
-	p.logger.Write(logging.DebugLevel, fmt.Sprintf(get_error(cErr)))
+				p.logger.Write(logging.DebugLevel, fmt.Sprintf("send subscription request %s", C.GoString(subIdStr)))
+				r := subscriptionRequest{
+					MsgId: C.GoString(subIdStr),
+					Pk:    C.GoString(subPkStr),
+				}
+				body, _ := json.Marshal(&r)
+				sendSubscriptionIdToAuthor(p.cfg.Provider.Uri(), body)
+				p.logger.Write(logging.DebugLevel, "subscription request sent")
 
-	subIdStr := C.get_address_id_str(subLink)
-	subPkStr := C.public_key_to_string(subPk)
+				// Obtain key for publishing messages
+				p.keyload = p.awaitKeyLoad()
 
-	p.logger.Write(logging.DebugLevel, fmt.Sprintf("send subscription request %s", C.GoString(subIdStr)))
-	r := subscriptionRequest{
-		MsgId: C.GoString(subIdStr),
-		Pk:    C.GoString(subPkStr),
+				// Free generated c strings from mem
+				C.drop_str(subIdStr)
+				C.drop_str(subPkStr)
+				return nil
+			}
+		}
 	}
-	body, _ := json.Marshal(&r)
-	sendSubscriptionIdToAuthor(p.cfg.Provider.Uri(), body)
-	p.logger.Write(logging.DebugLevel, "subscription request sent")
-
-	// Obtain key for publishing messages
-	p.keyload = p.awaitKeyLoad()
-
-	// Free generated c strings from mem
-	C.drop_str(subIdStr)
-	C.drop_str(subPkStr)
-
-	return nil
+	return errors.New("failed to connect publisher")
 }
 
 func (p *iotaPublisher) Publish(msg message.PublishWrapper) error {
@@ -166,7 +171,7 @@ func (p *iotaPublisher) awaitKeyLoad() *C.message_links_t {
 		if cErr != C.ERR_OK {
 			p.logger.Write(logging.DebugLevel, "Keyload not found yet... Checking again...")
 			// Loop until keyload is found and processed
-			time.Sleep(1000 * time.Millisecond)
+			time.Sleep(3000 * time.Millisecond)
 		} else {
 			p.logger.Write(logging.DebugLevel, "obtained keyload successfully")
 			break
