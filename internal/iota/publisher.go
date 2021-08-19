@@ -74,6 +74,7 @@ func (p *iotaPublisher) Connect() error {
 
 	// Process announcement message
 	rawId, err := p.getAnnouncementId(p.cfg.Provider.Uri())
+	p.logger.Write(logging.DebugLevel, fmt.Sprintf("Got announcement"))
 	if err != nil {
 		return err
 	}
@@ -232,7 +233,7 @@ func get_error(err C.err_t) string {
 	case C.ERR_OK:
 		e = "Operation completed successfully"
 	case C.ERR_OPERATION_FAILED:
-		e = "The operation failed to complete"
+		e = C.GoString(C.get_last_error())
 	case C.ERR_NULL_ARGUMENT:
 		e = "The function was passed a null argument"
 	case C.ERR_BAD_ARGUMENT:
