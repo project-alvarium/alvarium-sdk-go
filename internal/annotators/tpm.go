@@ -15,9 +15,9 @@ package annotators
 
 import (
 	"context"
-	"github.com/project-alvarium/alvarium-sdk-go/pkg/config"
-	"github.com/project-alvarium/alvarium-sdk-go/pkg/contracts"
-	"github.com/project-alvarium/alvarium-sdk-go/pkg/interfaces"
+	"github.com/DyrellC/alvarium-sdk-go/pkg/config"
+	"github.com/DyrellC/alvarium-sdk-go/pkg/contracts"
+	"github.com/DyrellC/alvarium-sdk-go/pkg/interfaces"
 	"os"
 )
 

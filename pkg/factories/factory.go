@@ -16,13 +16,13 @@ package factories
 import (
 	"errors"
 	"fmt"
-	"github.com/project-alvarium/alvarium-sdk-go/internal/annotators"
-	"github.com/project-alvarium/alvarium-sdk-go/internal/iota"
-	"github.com/project-alvarium/alvarium-sdk-go/internal/mock"
-	"github.com/project-alvarium/alvarium-sdk-go/internal/mqtt"
-	"github.com/project-alvarium/alvarium-sdk-go/pkg/config"
-	"github.com/project-alvarium/alvarium-sdk-go/pkg/contracts"
-	"github.com/project-alvarium/alvarium-sdk-go/pkg/interfaces"
+	"github.com/DyrellC/alvarium-sdk-go/internal/annotators"
+	"github.com/DyrellC/alvarium-sdk-go/internal/iota"
+	"github.com/DyrellC/alvarium-sdk-go/internal/mock"
+	"github.com/DyrellC/alvarium-sdk-go/internal/mqtt"
+	"github.com/DyrellC/alvarium-sdk-go/pkg/config"
+	"github.com/DyrellC/alvarium-sdk-go/pkg/contracts"
+	"github.com/DyrellC/alvarium-sdk-go/pkg/interfaces"
 	logInterface "github.com/project-alvarium/provider-logging/pkg/interfaces"
 )
 

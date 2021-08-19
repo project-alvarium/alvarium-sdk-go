@@ -14,9 +14,9 @@
 package factories
 
 import (
-	"github.com/project-alvarium/alvarium-sdk-go/pkg/config"
-	"github.com/project-alvarium/alvarium-sdk-go/pkg/contracts"
-	"github.com/project-alvarium/alvarium-sdk-go/test"
+	"github.com/DyrellC/alvarium-sdk-go/pkg/config"
+	"github.com/DyrellC/alvarium-sdk-go/pkg/contracts"
+	"github.com/DyrellC/alvarium-sdk-go/test"
 	logConfig "github.com/project-alvarium/provider-logging/pkg/config"
 	logFactory "github.com/project-alvarium/provider-logging/pkg/factories"
 	"github.com/project-alvarium/provider-logging/pkg/logging"
