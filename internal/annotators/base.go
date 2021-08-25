@@ -16,14 +16,14 @@ package annotators
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/DyrellC/alvarium-sdk-go/internal/hashprovider"
-	"github.com/DyrellC/alvarium-sdk-go/internal/hashprovider/md5"
-	"github.com/DyrellC/alvarium-sdk-go/internal/hashprovider/none"
-	"github.com/DyrellC/alvarium-sdk-go/internal/hashprovider/sha256"
-	"github.com/DyrellC/alvarium-sdk-go/internal/signprovider"
-	"github.com/DyrellC/alvarium-sdk-go/internal/signprovider/ed25519"
-	"github.com/DyrellC/alvarium-sdk-go/pkg/config"
-	"github.com/DyrellC/alvarium-sdk-go/pkg/contracts"
+	"github.com/project-alvarium/alvarium-sdk-go/internal/hashprovider"
+	"github.com/project-alvarium/alvarium-sdk-go/internal/hashprovider/md5"
+	"github.com/project-alvarium/alvarium-sdk-go/internal/hashprovider/none"
+	"github.com/project-alvarium/alvarium-sdk-go/internal/hashprovider/sha256"
+	"github.com/project-alvarium/alvarium-sdk-go/internal/signprovider"
+	"github.com/project-alvarium/alvarium-sdk-go/internal/signprovider/ed25519"
+	"github.com/project-alvarium/alvarium-sdk-go/pkg/config"
+	"github.com/project-alvarium/alvarium-sdk-go/pkg/contracts"
 	"io/ioutil"
 )
 

@@ -15,7 +15,7 @@ package none
 
 import (
 	"fmt"
-	"github.com/DyrellC/alvarium-sdk-go/test"
+	"github.com/project-alvarium/alvarium-sdk-go/test"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )

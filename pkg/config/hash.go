@@ -16,7 +16,7 @@ package config
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/DyrellC/alvarium-sdk-go/pkg/contracts"
+	"github.com/project-alvarium/alvarium-sdk-go/pkg/contracts"
 )
 
 type HashInfo struct {
