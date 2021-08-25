@@ -15,7 +15,7 @@ package interfaces
 
 import (
 	"context"
-	"github.com/DyrellC/alvarium-sdk-go/pkg/contracts"
+	"github.com/project-alvarium/alvarium-sdk-go/pkg/contracts"
 )
 
 type Annotator interface {

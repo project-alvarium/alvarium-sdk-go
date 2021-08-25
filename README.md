@@ -1,10 +1,9 @@
 # alvarium-sdk-go
 
 This is a re-implementation of the Alvarium SDK in Go. It borrows conceptually from the [original implementation](https://github.com/project-alvarium/go-sdk) while updating
-functionality for [IOTA Streams](https://github.com/iotaledger/streams) support. It is required that you build the C bindings for IOTA Streams. For that, it is currently 
-recommended to use the `chrysalis-2` branch of the IOTA Streams repo.
+functionality for [IOTA Streams](https://github.com/iotaledger/streams) support.
 
-A direct link to the IOTA C bindings directory and associated build directions is [here](https://github.com/iotaledger/streams/tree/9d469a09ee18c55f087821cb2ebf5de5715ca4f2/bindings/c).
+A direct link to the IOTA C bindings directory is [here](https://github.com/iotaledger/streams/tree/v1.1.0/bindings/c).
 
 **Environment Variable Setup**
 

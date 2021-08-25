@@ -24,9 +24,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/DyrellC/alvarium-sdk-go/pkg/config"
-	"github.com/DyrellC/alvarium-sdk-go/pkg/interfaces"
-	"github.com/DyrellC/alvarium-sdk-go/pkg/message"
+	"github.com/project-alvarium/alvarium-sdk-go/pkg/config"
+	"github.com/project-alvarium/alvarium-sdk-go/pkg/interfaces"
+	"github.com/project-alvarium/alvarium-sdk-go/pkg/message"
 	logInterface "github.com/project-alvarium/provider-logging/pkg/interfaces"
 	"github.com/project-alvarium/provider-logging/pkg/logging"
 	"io/ioutil"
@@ -37,6 +37,7 @@ import (
 
 // For randomized seed generation
 const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+const payloadLength = 1024
 
 type iotaPublisher struct {
 	cfg        config.IotaStreamConfig
@@ -68,7 +69,7 @@ func (p *iotaPublisher) Connect() error {
 	p.logger.Write(logging.DebugLevel, fmt.Sprintf("transport established %s", p.cfg.TangleNode.Uri()))
 
 	// Generate Subscriber instance
-	cErr := C.sub_new(&p.subscriber, C.CString(p.seed), transport)
+	cErr := C.sub_new(&p.subscriber, C.CString(p.seed), C.CString(p.cfg.Encoding), payloadLength, transport)
 	p.logger.Write(logging.DebugLevel, fmt.Sprintf(get_error(cErr)))
 	p.logger.Write(logging.DebugLevel, fmt.Sprintf("subscriber established seed=%s", p.seed))
 
@@ -106,8 +107,10 @@ func (p *iotaPublisher) Connect() error {
 				p.logger.Write(logging.DebugLevel, "subscription request sent")
 
 				// Obtain key for publishing messages
-				p.keyload = p.awaitKeyLoad()
-
+				p.keyload, err = p.awaitKeyLoad()
+				if err != nil {
+					return err
+				}
 				// Free generated c strings from mem
 				C.drop_str(subIdStr)
 				C.drop_str(subPkStr)
@@ -125,6 +128,7 @@ func (p *iotaPublisher) Publish(msg message.PublishWrapper) error {
 	}
 	messageBytes := C.CBytes(b)
 	messageLen := len(string(b))
+	p.logger.Write(logging.DebugLevel, fmt.Sprintf("Keyload: %t", p.keyload == nil))
 
 	p.logger.Write(logging.DebugLevel, fmt.Sprintf("attempting to publish %s", string(b)))
 	var msgLinks C.message_links_t
@@ -154,31 +158,34 @@ func (p *iotaPublisher) Close() error {
 	return nil
 }
 
-func (p *iotaPublisher) awaitKeyLoad() *C.message_links_t {
+func (p *iotaPublisher) awaitKeyLoad() (*C.message_links_t, error) {
 	var keyload *C.message_links_t
-	var msgIds *C.next_msg_ids_t
 	for { // TODO: This should timeout after a configurable period
+		var msgIds *C.next_msg_ids_t
 		// Gen next message ids to look for existing messages
 		cErr := C.sub_gen_next_msg_ids(&msgIds, p.subscriber)
 		p.logger.Write(logging.DebugLevel, fmt.Sprintf(get_error(cErr)))
-
-		// Search for keyload message from these ids and try to process it
-		cErr = C.sub_receive_keyload_from_ids(keyload, p.subscriber, msgIds)
+		if cErr != C.ERR_OK {
+			return nil, errors.New("failed to generate message ids")
+		}
+		// Search for processed message from these ids and try to process it
+		var processed C.message_links_t
+		cErr = C.sub_receive_keyload_from_ids(&processed, p.subscriber, msgIds)
 		p.logger.Write(logging.DebugLevel, fmt.Sprintf(get_error(cErr)))
-
-		// Free memory for c msgids object
-		C.drop_next_msg_ids(msgIds)
-
 		if cErr != C.ERR_OK {
 			p.logger.Write(logging.DebugLevel, "Keyload not found yet... Checking again...")
-			// Loop until keyload is found and processed
+			C.drop_next_msg_ids(msgIds)
+			// Loop until processed is found and processed
 			time.Sleep(3000 * time.Millisecond)
 		} else {
-			p.logger.Write(logging.DebugLevel, "obtained keyload successfully")
+			p.logger.Write(logging.DebugLevel, "obtained processed successfully")
+			keyload = &processed
+			// Free memory for c msgids object
+			C.drop_next_msg_ids(msgIds)
 			break
 		}
 	}
-	return keyload
+	return keyload, nil
 }
 
 func (p *iotaPublisher) getAnnouncementId(url string) (string, error) {
@@ -233,7 +240,7 @@ func get_error(err C.err_t) string {
 	case C.ERR_OK:
 		e = "Operation completed successfully"
 	case C.ERR_OPERATION_FAILED:
-		e = C.GoString(C.get_last_error())
+		e = "Streams operation failed to complete successfully"
 	case C.ERR_NULL_ARGUMENT:
 		e = "The function was passed a null argument"
 	case C.ERR_BAD_ARGUMENT:
