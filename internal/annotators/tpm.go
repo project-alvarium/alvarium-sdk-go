@@ -50,7 +50,7 @@ func (a *TpmAnnotator) Do(ctx context.Context, data []byte) (contracts.Annotatio
 	fi, err := os.Stat(tpmPath)
 	if err == nil {
 		// TPM mounted at default path
-		if fi.Mode()&os.ModeDevice == 0 || fi.Mode()&os.ModeSocket == 0 {
+		if fi.Mode()&os.ModeDevice != 0 || fi.Mode()&os.ModeSocket != 0 {
 			isSatisfied = true
 		}
 	}
