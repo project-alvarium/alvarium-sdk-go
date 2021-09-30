@@ -11,6 +11,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  *******************************************************************************/
+
 package factories
 
 import (
@@ -58,6 +59,8 @@ func NewAnnotator(kind contracts.AnnotationType, cfg config.SdkInfo) (interfaces
 		a = annotators.NewTpmAnnotator(cfg)
 	case contracts.AnnotationPKI:
 		a = annotators.NewPkiAnnotator(cfg)
+	case contracts.AnnotationTLS:
+		a = annotators.NewTlsAnnotator(cfg)
 	default:
 		return nil, fmt.Errorf("unrecognized AnnotationType %s", kind)
 	}

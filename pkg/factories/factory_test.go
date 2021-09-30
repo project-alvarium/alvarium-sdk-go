@@ -76,6 +76,7 @@ func TestAnnotatorFactory(t *testing.T) {
 	}{
 		{"valid pki type", cfg, contracts.AnnotationPKI, false},
 		{"valid tpm type", cfg, contracts.AnnotationTPM, false},
+		{"valid tls type", cfg, contracts.AnnotationTLS, false},
 		{"invalid annotator type", cfg, "invalid", true},
 	}
 	for _, tt := range tests {
