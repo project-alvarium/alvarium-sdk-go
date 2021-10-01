@@ -104,7 +104,9 @@ func (s *sdk) Mutate(ctx context.Context, old, new []byte) {
 			s.logger.Error(err.Error())
 			return
 		}
-		list.Items = append(list.Items, annotation)
+		if annotation.Kind != contracts.AnnotationTLS {
+			list.Items = append(list.Items, annotation)
+		}
 	}
 	wrap := message.PublishWrapper{
 		Action:      message.ActionMutate,
