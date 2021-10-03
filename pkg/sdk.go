@@ -15,6 +15,7 @@ package pkg
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/project-alvarium/alvarium-sdk-go/internal/annotators"
 	"github.com/project-alvarium/alvarium-sdk-go/pkg/config"
@@ -80,10 +81,12 @@ func (s *sdk) Create(ctx context.Context, data []byte) {
 		}
 		list.Items = append(list.Items, annotation)
 	}
+
+	b, _ := json.Marshal(list)
 	wrap := message.PublishWrapper{
 		Action:      message.ActionCreate,
 		MessageType: fmt.Sprintf("%T", list),
-		Content:     list,
+		Content:     b,
 	}
 	err := s.stream.Publish(wrap)
 	if err != nil {
@@ -108,10 +111,12 @@ func (s *sdk) Mutate(ctx context.Context, old, new []byte) {
 			list.Items = append(list.Items, annotation)
 		}
 	}
+
+	b, _ := json.Marshal(list)
 	wrap := message.PublishWrapper{
 		Action:      message.ActionMutate,
 		MessageType: fmt.Sprintf("%T", list),
-		Content:     list,
+		Content:     b,
 	}
 	err = s.stream.Publish(wrap)
 	if err != nil {
@@ -130,10 +135,12 @@ func (s *sdk) Transit(ctx context.Context, data []byte) {
 		}
 		list.Items = append(list.Items, annotation)
 	}
+
+	b, _ := json.Marshal(list)
 	wrap := message.PublishWrapper{
 		Action:      message.ActionTransit,
 		MessageType: fmt.Sprintf("%T", list),
-		Content:     list,
+		Content:     b,
 	}
 	err := s.stream.Publish(wrap)
 	if err != nil {

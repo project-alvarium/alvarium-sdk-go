@@ -11,6 +11,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  *******************************************************************************/
+
 package message
 
 type SdkAction string
@@ -29,9 +30,9 @@ func (s SdkAction) validate() bool {
 }
 
 type PublishWrapper struct {
-	Action      SdkAction   `json:"action,omitempty"`
-	MessageType string      `json:"messageType,omitempty"`
-	Content     interface{} `json:"content,omitempty"`
+	Action      SdkAction `json:"action,omitempty"`
+	MessageType string    `json:"messageType,omitempty"`
+	Content     []byte    `json:"content,omitempty"`
 }
 
 type SubscribeWrapper struct {
