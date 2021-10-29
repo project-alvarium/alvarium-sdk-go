@@ -32,6 +32,7 @@ import (
 	"io/ioutil"
 	"math/rand"
 	"net/http"
+	"sync"
 	"time"
 )
 
@@ -43,7 +44,8 @@ type iotaPublisher struct {
 	cfg        config.IotaStreamConfig
 	logger     logInterface.Logger
 	keyload    *C.message_links_t // The Keyload indicates a key needed by the publisher to send messages to the stream
-	subscriber *C.subscriber_t    // The publisher is actually subscribed to the stream
+	mutex      sync.Mutex
+	subscriber *C.subscriber_t // The publisher is actually subscribed to the stream
 	seed       string
 }
 
@@ -131,6 +133,7 @@ func (p *iotaPublisher) Publish(msg message.PublishWrapper) error {
 	p.logger.Write(logging.DebugLevel, fmt.Sprintf("Keyload: %t", p.keyload == nil))
 
 	p.logger.Write(logging.DebugLevel, fmt.Sprintf("attempting to publish %s", string(b)))
+	p.mutex.Lock()
 	var msgLinks C.message_links_t
 	cErr := C.sub_send_signed_packet(
 		&msgLinks,
@@ -138,6 +141,7 @@ func (p *iotaPublisher) Publish(msg message.PublishWrapper) error {
 		*p.keyload,
 		nil, 0,
 		(*C.uchar)(messageBytes), C.size_t(messageLen))
+	p.mutex.Unlock()
 	p.logger.Write(logging.DebugLevel, fmt.Sprintf(get_error(cErr)))
 
 	var addrLink *C.address_t
