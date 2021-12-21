@@ -39,4 +39,9 @@ type Sdk interface {
 	// This method could be used to asses the signature validity on the received data, secure comms, checksum validation,
 	// etc.
 	Transit(ctx context.Context, data []byte)
+
+	// Publish is proposed to provide extensibility for annotators that may need to attest to the state of data before it
+	// is sent over the wire. Publish could also be useful in cases where the downstream host receiving the data isn't
+	// running Alvarium-enabled applications.
+	Publish(ctx context.Context, data []byte)
 }
