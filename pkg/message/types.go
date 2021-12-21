@@ -20,10 +20,11 @@ const (
 	ActionCreate  SdkAction = "create"
 	ActionMutate  SdkAction = "mutate"
 	ActionTransit SdkAction = "transit"
+	ActionPublish SdkAction = "publish"
 )
 
 func (s SdkAction) validate() bool {
-	if s == ActionCreate || s == ActionMutate || s == ActionTransit {
+	if s == ActionCreate || s == ActionMutate || s == ActionTransit || s == ActionPublish {
 		return true
 	}
 	return false

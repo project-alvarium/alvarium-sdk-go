@@ -147,3 +147,27 @@ func (s *sdk) Transit(ctx context.Context, data []byte) {
 		s.logger.Error(err.Error())
 	}
 }
+
+func (s *sdk) Publish(ctx context.Context, data []byte) {
+	var list contracts.AnnotationList
+	
+	for _, a := range s.annotators {
+		annotation, err := a.Do(ctx, data)
+		if err != nil {
+			s.logger.Error(err.Error())
+			return
+		}
+		list.Items = append(list.Items, annotation)
+	}
+
+	b, _ := json.Marshal(list)
+	wrap := message.PublishWrapper{
+		Action: message.ActionPublish,
+		MessageType: fmt.Sprintf("%T", list),
+		Content: b,
+	}
+	err := s.stream.Publish(wrap)
+	if err != nil {
+		s.logger.Error(err.Error())
+	}
+}
