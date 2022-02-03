@@ -52,7 +52,7 @@ func TestTlsAnnotator_Base(t *testing.T) {
 			anno, err := tls.Do(context.Background(), []byte(tt.data))
 			test.CheckError(err, tt.expectError, tt.name, t)
 			if err == nil {
-				result, err := verifySignature(tt.cfg.Signature.PublicKey, anno)
+				result, err := VerifySignature(tt.cfg.Signature.PublicKey, anno)
 				if err != nil {
 					t.Error(err.Error())
 				} else if !result {

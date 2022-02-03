@@ -45,7 +45,7 @@ func TestDeriveHash(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := deriveHash(tt.hashType, tt.input)
+			result := DeriveHash(tt.hashType, tt.input)
 			assert.Equal(t, tt.output, result)
 		})
 	}
@@ -80,7 +80,7 @@ func TestSignAnnotation(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result, err := signAnnotation(tt.cfg, tt.annotation)
+			result, err := SignAnnotation(tt.cfg, tt.annotation)
 			test.CheckError(err, tt.expectError, tt.name, t)
 
 			if err == nil {
