@@ -16,10 +16,11 @@ package annotators
 import (
 	"context"
 	"encoding/json"
-	"github.com/project-alvarium/alvarium-sdk-go/pkg/config"
-	"github.com/project-alvarium/alvarium-sdk-go/test"
 	"io/ioutil"
 	"testing"
+
+	"github.com/project-alvarium/alvarium-sdk-go/pkg/config"
+	"github.com/project-alvarium/alvarium-sdk-go/test"
 )
 
 func TestTpmAnnotator_Do(t *testing.T) {
@@ -61,7 +62,7 @@ func TestTpmAnnotator_Do(t *testing.T) {
 			anno, err := tpm.Do(context.Background(), []byte(tt.data))
 			test.CheckError(err, tt.expectError, tt.name, t)
 			if err == nil {
-				result, err := verifySignature(tt.cfg.Signature.PublicKey, anno)
+				result, err := VerifySignature(tt.cfg.Signature.PublicKey, anno)
 				if err != nil {
 					t.Error(err.Error())
 				} else if !result {

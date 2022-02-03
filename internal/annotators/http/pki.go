@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2021 Dell Inc.
+ * Copyright 2022 Dell Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -11,15 +11,16 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  *******************************************************************************/
-package annotators
+package http
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"os"
 
+	"github.com/project-alvarium/alvarium-sdk-go/internal/annotators"
 	"github.com/project-alvarium/alvarium-sdk-go/internal/signprovider"
 	"github.com/project-alvarium/alvarium-sdk-go/internal/signprovider/ed25519"
 	"github.com/project-alvarium/alvarium-sdk-go/pkg/config"
@@ -27,37 +28,43 @@ import (
 	"github.com/project-alvarium/alvarium-sdk-go/pkg/interfaces"
 )
 
-// PkiAnnotator is used to validate whether the signature on a given piece of data is valid
-type PkiAnnotator struct {
+// HttpPkiAnnotator is used to validate whether the signature on a given piece of data is valid, both sent in the HTTP message
+type HttpPkiAnnotator struct {
 	hash contracts.HashType
 	kind contracts.AnnotationType
 	sign config.SignatureInfo
 }
 
-func NewPkiAnnotator(cfg config.SdkInfo) interfaces.Annotator {
-	a := PkiAnnotator{}
+func NewHttpPkiAnnotator(cfg config.SdkInfo) interfaces.Annotator {
+	a := HttpPkiAnnotator{}
 	a.hash = cfg.Hash.Type
-	a.kind = contracts.AnnotationPKI
+	a.kind = contracts.AnnotationPKIHttp
 	a.sign = cfg.Signature
 	return &a
 }
 
-func (a *PkiAnnotator) Do(ctx context.Context, data []byte) (contracts.Annotation, error) {
-	key := DeriveHash(a.hash, data)
+func (a *HttpPkiAnnotator) Do(ctx context.Context, data []byte) (contracts.Annotation, error) {
+	key := annotators.DeriveHash(a.hash, data)
 	hostname, _ := os.Hostname()
 
-	var sig signable
-	err := json.Unmarshal(data, &sig)
+	//Call parser on request
+	req := ctx.Value(testRequest)
+	parsed, err := requestParser(req.(*http.Request))
+
 	if err != nil {
 		return contracts.Annotation{}, err
 	}
+	var sig signable
+	sig.Seed = parsed
+	sig.Signature = req.(*http.Request).Header.Get("Signature")
 
 	ok, err := sig.verifySignature(a.sign.PublicKey)
 	if err != nil {
 		return contracts.Annotation{}, err
 	}
+
 	annotation := contracts.NewAnnotation(string(key), a.hash, hostname, a.kind, ok)
-	signed, err := SignAnnotation(a.sign.PrivateKey, annotation)
+	signed, err := annotators.SignAnnotation(a.sign.PrivateKey, annotation)
 	if err != nil {
 		return contracts.Annotation{}, err
 	}
@@ -65,26 +72,9 @@ func (a *PkiAnnotator) Do(ctx context.Context, data []byte) (contracts.Annotatio
 	return annotation, nil
 }
 
-// The question of how/whether to validate signed data is tricky. We want this SDK to be as agnostic of the application data
-// as possible.
-//
-// As to the "how", we need to require some minimal property support for the data being annotated by Alvarium. For
-// example, the data type could have a property on it indicating the signature of the data creator, as well as a seed
-// property that was used to generate the signature. But what are these properties called -- signature, sig, signed, etc?
-// We would need to formally specify.
-//
-// Secondarily, it could be possible to pass the signature as a header on a pub/sub message or an HTTP call. I don't know
-// the ultimate answer to where this should reside. For now I'm making the following assumptions.
-// 1.) The incoming []byte is a JSON string
-// 2.) That JSON can be unmarshaled into a type that has "Signature" and "Seed" properties of type string
-//
-// As to the "whether", the use case here is that the customer wants to validate a signature on the data itself and attest
-// to that validation in flight. It is possible to validate a signature at a later stage at the point where all of the
-// annotations are assessed to calculate the final score. The signature on the annotation itself, having been generated
-// by the private key of the host machine and verified through a public key, could be enough to trust the associated data.
 type signable struct {
-	Seed      string `json:"seed,omitempty"`
-	Signature string `json:"signature,omitempty"`
+	Seed      string
+	Signature string
 }
 
 func (s *signable) verifySignature(key config.KeyInfo) (bool, error) {
@@ -92,18 +82,19 @@ func (s *signable) verifySignature(key config.KeyInfo) (bool, error) {
 		return false, nil
 	}
 	var p signprovider.Provider
-	switch key.Type {
+	switch contracts.KeyAlgorithm(key.Type) {
 	case contracts.KeyEd25519:
 		p = ed25519.New()
+
 	default:
 		return false, fmt.Errorf("unrecognized key type %s", key.Type)
 	}
-
+	// Path can change from one enviroment to another
+	// When using Kubernetes, we can search for the keyid directly in the secrets folder, as all keys can be stored there
 	pub, err := ioutil.ReadFile(key.Path)
 	if err != nil {
 		return false, err
 	}
-
 	ok := p.Verify(pub, []byte(s.Seed), []byte(s.Signature))
 	return ok, nil
 }

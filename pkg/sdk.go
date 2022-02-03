@@ -150,7 +150,7 @@ func (s *sdk) Transit(ctx context.Context, data []byte) {
 
 func (s *sdk) Publish(ctx context.Context, data []byte) {
 	var list contracts.AnnotationList
-	
+
 	for _, a := range s.annotators {
 		annotation, err := a.Do(ctx, data)
 		if err != nil {
@@ -162,9 +162,9 @@ func (s *sdk) Publish(ctx context.Context, data []byte) {
 
 	b, _ := json.Marshal(list)
 	wrap := message.PublishWrapper{
-		Action: message.ActionPublish,
+		Action:      message.ActionPublish,
 		MessageType: fmt.Sprintf("%T", list),
-		Content: b,
+		Content:     b,
 	}
 	err := s.stream.Publish(wrap)
 	if err != nil {

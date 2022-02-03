@@ -13,6 +13,12 @@
  *******************************************************************************/
 package contracts
 
+type ContentType string
+
+const (
+	ContentTypeJSON	ContentType = "application/json"
+)
+
 type HashType string
 
 const (
@@ -31,7 +37,7 @@ func (t HashType) Validate() bool {
 type KeyAlgorithm string
 
 const (
-	KeyEd25519 KeyAlgorithm = "ed25519"
+	KeyEd25519   KeyAlgorithm = "ed25519"
 )
 
 func (k KeyAlgorithm) Validate() bool {
@@ -60,10 +66,11 @@ func (t StreamType) Validate() bool {
 type AnnotationType string
 
 const (
-	AnnotationPKI    AnnotationType = "pki"
-	AnnotationSource AnnotationType = "src"
-	AnnotationTLS    AnnotationType = "tls"
-	AnnotationTPM    AnnotationType = "tpm"
+	AnnotationPKI     AnnotationType = "pki"
+	AnnotationPKIHttp AnnotationType = "pki-http"
+	AnnotationSource  AnnotationType = "src"
+	AnnotationTLS     AnnotationType = "tls"
+	AnnotationTPM     AnnotationType = "tpm"
 )
 
 func (t AnnotationType) Validate() bool {

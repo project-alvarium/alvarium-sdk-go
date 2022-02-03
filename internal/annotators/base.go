@@ -16,6 +16,8 @@ package annotators
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+
 	"github.com/project-alvarium/alvarium-sdk-go/internal/hashprovider"
 	"github.com/project-alvarium/alvarium-sdk-go/internal/hashprovider/md5"
 	"github.com/project-alvarium/alvarium-sdk-go/internal/hashprovider/none"
@@ -24,10 +26,9 @@ import (
 	"github.com/project-alvarium/alvarium-sdk-go/internal/signprovider/ed25519"
 	"github.com/project-alvarium/alvarium-sdk-go/pkg/config"
 	"github.com/project-alvarium/alvarium-sdk-go/pkg/contracts"
-	"io/ioutil"
 )
 
-func deriveHash(hash contracts.HashType, data []byte) string {
+func DeriveHash(hash contracts.HashType, data []byte) string {
 	var h hashprovider.Provider
 	switch hash {
 	case contracts.MD5Hash:
@@ -41,7 +42,7 @@ func deriveHash(hash contracts.HashType, data []byte) string {
 	return h.Derive(data)
 }
 
-func signAnnotation(key config.KeyInfo, a contracts.Annotation) (string, error) {
+func SignAnnotation(key config.KeyInfo, a contracts.Annotation) (string, error) {
 	var s signprovider.Provider
 	switch key.Type {
 	case contracts.KeyEd25519:
@@ -64,7 +65,7 @@ func signAnnotation(key config.KeyInfo, a contracts.Annotation) (string, error) 
 	return signed, nil
 }
 
-func verifySignature(key config.KeyInfo, src contracts.Annotation) (bool, error) {
+func VerifySignature(key config.KeyInfo, src contracts.Annotation) (bool, error) {
 	var s signprovider.Provider
 	switch key.Type {
 	case contracts.KeyEd25519:

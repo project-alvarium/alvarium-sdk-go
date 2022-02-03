@@ -15,10 +15,11 @@ package annotators
 
 import (
 	"context"
+	"os"
+
 	"github.com/project-alvarium/alvarium-sdk-go/pkg/config"
 	"github.com/project-alvarium/alvarium-sdk-go/pkg/contracts"
 	"github.com/project-alvarium/alvarium-sdk-go/pkg/interfaces"
-	"os"
 )
 
 // Default path to a TPM 2.0 device (https://wiki.archlinux.org/title/Trusted_Platform_Module)
@@ -40,7 +41,7 @@ func NewTpmAnnotator(cfg config.SdkInfo) interfaces.Annotator {
 }
 
 func (a *TpmAnnotator) Do(ctx context.Context, data []byte) (contracts.Annotation, error) {
-	key := deriveHash(a.hash, data)
+	key := DeriveHash(a.hash, data)
 	hostname, _ := os.Hostname()
 	isSatisfied := false
 
@@ -56,7 +57,7 @@ func (a *TpmAnnotator) Do(ctx context.Context, data []byte) (contracts.Annotatio
 	}
 
 	annotation := contracts.NewAnnotation(key, a.hash, hostname, a.kind, isSatisfied)
-	sig, err := signAnnotation(a.sign.PrivateKey, annotation)
+	sig, err := SignAnnotation(a.sign.PrivateKey, annotation)
 	if err != nil {
 		return contracts.Annotation{}, err
 	}
