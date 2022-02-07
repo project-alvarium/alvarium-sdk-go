@@ -24,12 +24,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-/*
-	TODO:
-
-
-*/
-
 func TestHttpPkiAnnotator_RequestParser(t *testing.T) {
 	b, err := ioutil.ReadFile("./test/config.json")
 	if err != nil {
@@ -42,7 +36,7 @@ func TestHttpPkiAnnotator_RequestParser(t *testing.T) {
 		t.Fatalf(err.Error())
 	}
 
-	base := httptest.NewRequest("POST", "/foo", nil)
+	base := httptest.NewRequest("POST", "/foo?var1=1&var2=2", nil)
 
 	base.Header.Set("Host", "example.com")
 	base.Header.Set("Date", "Tue, 20 Apr 2021 02:07:55 GMT")
@@ -50,59 +44,46 @@ func TestHttpPkiAnnotator_RequestParser(t *testing.T) {
 	base.Header.Set("Content-Length", "18")
 	base.Header.Set("Signature", "whatever")
 
-	req2 := base.Clone(base.Context())
+	tests := []struct {
+		name           string
+		signatureInput string
+		expectedSeed   string
+		expectError    bool
+	}{
+		{"testing integeration of all Signature-Input fields",
+			"\"date\" \"@method\" \"@path\" \"@authority\" \"content-type\" \"content-length\" \"@query-params\" \"@query\" ",
+			"\"date\" Tue, 20 Apr 2021 02:07:55 GMT\n\"@method\" POST\n\"@path\" /foo\n\"@authority\" example.com\n\"content-type\" application/json\n\"content-length\" 18\n\"@query-params\";name=\"var1\": 1\n\"@query-params\";name=\"var2\": 2\n\"@query\" ?var1=1&var2=2\n", false},
 
-	req2.Header.Set("Signature-Input", "\"date\" \"@method\" \"@path\" \"@authority\" \"content-type\" \"content-length\"")
-	seed, _ := requestParser(req2)
+		{"testing @method ", "\"@method\"", "\"@method\" POST\n", false},
+		{"testing @authority", "\"@authority\"", "\"@authority\" example.com\n", false},
 
-	t.Run("parser_test_should_succeed_if_equal", func(t *testing.T) {
-		expectedSeed := "\"date\" Tue, 20 Apr 2021 02:07:55 GMT\n\"@method\" POST\n\"@path\" /foo\n\"@authority\" example.com\n\"content-type\" application/json\n\"content-length\" 18\n"
-		assert.Equal(t, expectedSeed, seed)
-	})
+		{"testing @scheme", "\"@scheme\"", "\"@scheme\" http\n", false},
+		{"testing @request-target", "\"@request-target\"", "\"@request-target\" /foo?var1=1&var2=2\n", false},
 
-	t.Run("parser_test_should_fail_if_not_equal", func(t *testing.T) {
-		expectedSeed := "\"date\" GMT\n\"@method\" POST\n\"@path\" /foo\n\"@authority\" example.com\n\"content-type\" application/json\n\"content-length\" 18\n"
-		assert.NotEqual(t, expectedSeed, seed)
-	})
+		{"testing @path", "\"@path\"", "\"@path\" /foo\n", false},
 
-	req3 := base.Clone(base.Context())
-	req3.Header.Set("Signature-Input", "\"@method\"")
+		{"testing @query", "\"@query\"", "\"@query\" ?var1=1&var2=2\n", false},
+		{"testing @query-params", "\"@query-params\"", "\"@query-params\";name=\"var1\": 1\n\"@query-params\";name=\"var2\": 2\n", false},
 
-	seed, _ = requestParser(req3)
+		{"testing non-existant derived component", "\"@x-test\"", "", true},
+		{"testing non-existant  header field", "\"x-test\"", "", true},
+	}
 
-	t.Run("parser_test_@method_should_succeed", func(t *testing.T) {
-		expectedSeed := "\"@method\" POST\n"
-		assert.Equal(t, expectedSeed, seed)
-	})
+	var seed string
+	for _, tt := range tests {
 
-	req4 := base.Clone(base.Context())
-	req4.Header.Set("Signature-Input", "\"@authority\"")
+		req := base.Clone(base.Context())
+		req.Header.Set("Signature-Input", tt.signatureInput)
 
-	seed, _ = requestParser(req4)
+		t.Run(tt.name, func(t *testing.T) {
+			seed, err = requestParser(req)
+			if tt.expectError {
+				assert.Error(t, err)
+			} else {
+				assert.Equal(t, tt.expectedSeed, seed)
+			}
+		})
 
-	t.Run("parser_test_@authority_should_succeed", func(t *testing.T) {
-		expectedSeed := "\"@authority\" example.com\n"
-		assert.Equal(t, expectedSeed, seed)
-	})
-
-	req5 := base.Clone(base.Context())
-	req5.Header.Set("Signature-Input", "\"@x-test\"")
-
-	seed, err = requestParser(req5)
-
-	t.Run("parser_test_should_fail_unhandled_speciality_component", func(t *testing.T) {
-		assert.Error(t, err)
-	})
-
-	req6 := base.Clone(base.Context())
-	req6.Header.Set("Signature-Input", "\"x-test\"")
-
-	seed, err = requestParser(req6)
-
-	t.Run("parser_test_should_fail_unhandled_header_field", func(t *testing.T) {
-		assert.Error(t, err)
-	})
-
-	// TODO:  the rest of the methods
+	}
 
 }
