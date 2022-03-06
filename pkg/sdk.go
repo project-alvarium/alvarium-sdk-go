@@ -17,7 +17,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/project-alvarium/alvarium-sdk-go/internal/annotators"
+	"sync"
+
 	"github.com/project-alvarium/alvarium-sdk-go/pkg/config"
 	"github.com/project-alvarium/alvarium-sdk-go/pkg/contracts"
 	"github.com/project-alvarium/alvarium-sdk-go/pkg/factories"
@@ -25,7 +26,6 @@ import (
 	"github.com/project-alvarium/alvarium-sdk-go/pkg/message"
 	logInterface "github.com/project-alvarium/provider-logging/pkg/interfaces"
 	"github.com/project-alvarium/provider-logging/pkg/logging"
-	"sync"
 )
 
 type sdk struct {
@@ -95,7 +95,11 @@ func (s *sdk) Create(ctx context.Context, data []byte) {
 }
 
 func (s *sdk) Mutate(ctx context.Context, old, new []byte) {
-	src := annotators.NewSourceAnnotator(s.cfg)
+	src, err := factories.NewAnnotator(contracts.AnnotationSource, s.cfg)
+	if err != nil {
+		s.logger.Error(err.Error())
+		return
+	}
 	a, err := src.Do(ctx, old)
 
 	var list contracts.AnnotationList
