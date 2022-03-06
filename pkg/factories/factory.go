@@ -24,6 +24,7 @@ import (
 	"github.com/project-alvarium/alvarium-sdk-go/pkg/config"
 	"github.com/project-alvarium/alvarium-sdk-go/pkg/contracts"
 	"github.com/project-alvarium/alvarium-sdk-go/pkg/interfaces"
+	httpAnnotators "github.com/project-alvarium/alvarium-sdk-go/internal/annotators/http"
 	logInterface "github.com/project-alvarium/provider-logging/pkg/interfaces"
 )
 
@@ -55,10 +56,14 @@ func NewStreamProvider(cfg config.StreamInfo, logger logInterface.Logger) (inter
 func NewAnnotator(kind contracts.AnnotationType, cfg config.SdkInfo) (interfaces.Annotator, error) {
 	var a interfaces.Annotator
 	switch kind {
+	case contracts.AnnotationSource:
+		a = annotators.NewSourceAnnotator(cfg)
 	case contracts.AnnotationTPM:
 		a = annotators.NewTpmAnnotator(cfg)
 	case contracts.AnnotationPKI:
 		a = annotators.NewPkiAnnotator(cfg)
+	case contracts.AnnotationPKIHttp:
+		a = httpAnnotators.NewHttpPkiAnnotator(cfg)
 	case contracts.AnnotationTLS:
 		a = annotators.NewTlsAnnotator(cfg)
 	default:

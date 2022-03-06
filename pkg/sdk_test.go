@@ -16,17 +16,18 @@ package pkg
 import (
 	"context"
 	"encoding/json"
-	"github.com/project-alvarium/alvarium-sdk-go/internal/annotators"
+	"io/ioutil"
+	"sync"
+	"testing"
+
 	"github.com/project-alvarium/alvarium-sdk-go/pkg/config"
 	"github.com/project-alvarium/alvarium-sdk-go/pkg/contracts"
+	"github.com/project-alvarium/alvarium-sdk-go/pkg/factories"
 	"github.com/project-alvarium/alvarium-sdk-go/pkg/interfaces"
 	logConfig "github.com/project-alvarium/provider-logging/pkg/config"
 	logFactory "github.com/project-alvarium/provider-logging/pkg/factories"
 	logInterface "github.com/project-alvarium/provider-logging/pkg/interfaces"
 	"github.com/project-alvarium/provider-logging/pkg/logging"
-	"io/ioutil"
-	"sync"
-	"testing"
 )
 
 func TestNewSdk(t *testing.T) {
@@ -61,11 +62,14 @@ func TestNewSdk(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			annotator, err := factories.NewAnnotator(contracts.AnnotationTPM, tt.cfg)
+			if err != nil {
+				t.Fatalf(err.Error())
+			}
 			anno := []interfaces.Annotator{
-				annotators.NewTpmAnnotator(tt.cfg),
+				annotator,
 			}
 			instance := NewSdk(anno, tt.cfg, tt.log)
-
 			var wg sync.WaitGroup
 			wg.Add(1)
 			defer wg.Done()

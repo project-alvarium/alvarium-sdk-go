@@ -75,6 +75,8 @@ func TestAnnotatorFactory(t *testing.T) {
 		expectError bool
 	}{
 		{"valid pki type", cfg, contracts.AnnotationPKI, false},
+		{"valid httpPki type", cfg, contracts.AnnotationPKIHttp, false},
+		{"valid src type", cfg, contracts.AnnotationSource, false},
 		{"valid tpm type", cfg, contracts.AnnotationTPM, false},
 		{"valid tls type", cfg, contracts.AnnotationTLS, false},
 		{"invalid annotator type", cfg, "invalid", true},
