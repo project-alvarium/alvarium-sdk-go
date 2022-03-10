@@ -18,22 +18,17 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
-	"path/filepath"
-	"regexp"
 	"strconv"
-	"strings"
 	"testing"
 	"time"
 
-	"github.com/project-alvarium/alvarium-sdk-go/internal/signprovider/ed25519"
-	"github.com/project-alvarium/alvarium-sdk-go/pkg/contracts"
-
 	"github.com/project-alvarium/alvarium-sdk-go/internal/annotators"
+	handler "github.com/project-alvarium/alvarium-sdk-go/internal/annotators/http/handler"
 	"github.com/project-alvarium/alvarium-sdk-go/pkg/config"
+	"github.com/project-alvarium/alvarium-sdk-go/pkg/contracts"
 	"github.com/project-alvarium/alvarium-sdk-go/test"
 )
 
@@ -54,19 +49,48 @@ func TestHttpPkiAnnotator_Do(t *testing.T) {
 		t.Fatalf(err.Error())
 	}
 
+	// Set up example signed data type for test purposes
+	type testData struct {
+		SignatureInput string
+		Signature      string
+	}
+
+	// Tests the Signature signed by the assembler called by buildRequest
+	t1 := testData{
+		SignatureInput: req.Header.Get("Signature-Input"),
+		Signature:      req.Header.Get("Signature"),
+	}
+
+	t2 := t1
+	t2.SignatureInput = "\"@method\" \"@path\" \"@authority\" \"Content-Type\" \"Content-Length\";created=1646146637;keyid=\"public.key\";alg=\"invalid\""
+
+	t3 := t1
+	t3.SignatureInput = "\"@method\" \"@path\" \"@authority\" \"Content-Type\" \"Content-Length\";created=1646146637;keyid=\"invalid\";alg=\"ed25519\""
+
+	t4 := t1
+	t4.Signature = ""
+
+	t5 := t1
+	t5.Signature = "invalid"
+
 	tests := []struct {
 		name        string
 		expectError bool
+		data        testData
 	}{
-		{"pki annotation OK", false},
-		{"pki bad key type", true},
-		{"pki key not found", true},
-		{"pki empty signature", false},
-		{"pki invalid signature", false},
+		{"pki annotation OK", false, t1},
+		{"pki bad key type", true, t2},
+		{"pki key not found", true, t3},
+		{"pki empty signature", false, t4},
+		{"pki invalid signature", false, t5},
 	}
 
 	for _, tt := range tests {
-		ctx := buildContext(tt.name, req)
+		req.Header.Set("Signature-Input", tt.data.SignatureInput)
+		req.Header.Set("Signature", tt.data.Signature)
+
+		ctx := context.WithValue(req.Context(), contracts.HttpRequestKey, req)
+
 		t.Run(tt.name, func(t *testing.T) {
 			pki := NewHttpPkiAnnotator(cfg)
 			anno, err := pki.Do(ctx, data)
@@ -92,37 +116,6 @@ func TestHttpPkiAnnotator_Do(t *testing.T) {
 	}
 }
 
-func buildContext(testName string, req *http.Request) context.Context {
-	reqClone := req.Clone(req.Context())
-	switch testName {
-	case "pki annotation OK":
-		ctx := context.WithValue(req.Context(), testRequest, req)
-		return ctx
-	case "pki bad key type":
-		signatureInput := reqClone.Header.Get("Signature-Input")
-
-		//Finding and replacing the alg parameter value in the Signature-Input by invalid
-		m := regexp.MustCompile("(alg=\")([^\"]*)(\")")
-		res := m.ReplaceAllString(signatureInput, "${1}invalid$3")
-
-		reqClone.Header.Set("Signature-Input", res)
-	case "pki key not found":
-		signatureInput := reqClone.Header.Get("Signature-Input")
-
-		//Finding and replacing the keyid parameter value in the Signature-Input by invalid
-		m := regexp.MustCompile("(keyid=\")([^\"]*)(\")")
-		res := m.ReplaceAllString(signatureInput, "${1}invalid$3")
-
-		reqClone.Header.Set("Signature-Input", res)
-	case "pki empty signature":
-		reqClone.Header.Set("Signature", "")
-	case "pki invalid signature":
-		reqClone.Header.Set("Signature", "invalid")
-	}
-	ctx := context.WithValue(reqClone.Context(), testRequest, reqClone)
-	return ctx
-}
-
 func buildRequest(keys config.SignatureInfo) (*http.Request, []byte, error) {
 	type sample struct {
 		Key   string `json:"key"`
@@ -133,78 +126,20 @@ func buildRequest(keys config.SignatureInfo) (*http.Request, []byte, error) {
 	b, _ := json.Marshal(t)
 
 	req := httptest.NewRequest("POST", "/foo?param=value&foo=bar&baz=batman", bytes.NewReader(b))
-	req.Header.Set("Host", "example.com")
-
 	ticks := time.Now()
 	now := ticks.String()
-	req.Header.Set("Date", now)
-	req.Header.Set(contentType, string(contracts.ContentTypeJSON))
-	req.Header.Set(contentLength, strconv.FormatInt(req.ContentLength, 10))
-
-	fields := []string{string(method), string(path), string(authority), contentType, contentLength}
-	headerValue, signature, err := signRequest(ticks, fields, keys, req)
-
-	req.Header.Set("Signature-Input", headerValue)
-	req.Header.Set("Signature", signature)
-
-	return req, b, err
-}
-
-func signRequest(ticks time.Time, fields []string, keys config.SignatureInfo, req *http.Request) (string, string, error) {
-	headerValue := "" //This will be the value returned for populating the Signature-Input header
-	inputValue := ""  //This will be the value used as input for the signature
-
-	for i, f := range fields {
-		headerValue += fmt.Sprintf("\"%s\"", f)
-		switch f {
-		case contentType:
-			inputValue += fmt.Sprintf("\"%s\" %s", f, req.Header.Get(contentType))
-		case contentLength:
-			inputValue += fmt.Sprintf("\"%s\" %s", f, strconv.FormatInt(req.ContentLength, 10))
-		case string(method):
-			inputValue += fmt.Sprintf("\"%s\" %s", f, req.Method)
-		case string(authority):
-			inputValue += fmt.Sprintf("\"%s\" %s", f, req.Host)
-		case string(scheme):
-			scheme := strings.ToLower(strings.Split(req.Proto, "/")[0])
-			inputValue += fmt.Sprintf("\"%s\" %s", f, scheme)
-		case string(requestTarget):
-			inputValue += fmt.Sprintf("\"%s\" %s", f, req.RequestURI)
-		case string(path):
-			inputValue += fmt.Sprintf("\"%s\" %s", f, req.URL.Path)
-		case string(query):
-			var query string = "?" + req.URL.RawQuery
-			inputValue += fmt.Sprintf("\"%s\" %s", f, query)
-		case string(queryParams):
-			queryParamsRawMap := req.URL.Query()
-			var queryParams []string
-			for key, value := range queryParamsRawMap {
-				b := new(bytes.Buffer)
-				fmt.Fprintf(b, ";name=\"%s\": %s", key, value[0])
-				queryParams = append(queryParams, b.String())
-			}
-
-			inputValue += fmt.Sprintf("\"%s\" %s", f, query)
-		}
-
-		inputValue += "\n"
-		if i < len(fields)-1 {
-			headerValue += " "
-		}
+	req.Header = http.Header{
+		"Host":           []string{"example.com"},
+		"Date":           []string{now},
+		"Content-Type":   []string{string(contracts.ContentTypeJSON)},
+		"Content-Length": []string{strconv.FormatInt(req.ContentLength, 10)},
 	}
 
-	tail := fmt.Sprintf(";created=%s;keyid=\"%s\";alg=\"%s\";", strconv.FormatInt(ticks.Unix(), 10),
-		filepath.Base(keys.PublicKey.Path), keys.PublicKey.Type)
-
-	headerValue += tail
-	inputValue += tail
-
-	signer := ed25519.New()
-	prv, err := ioutil.ReadFile(keys.PrivateKey.Path)
+	fields := []string{string(contracts.Method), string(contracts.Path), string(contracts.Authority), contracts.HttpContentType, contracts.ContentLength}
+	handler := handler.NewEd25519RequestHandler(req)
+	err := handler.AddSignatureHeaders(ticks, fields, keys)
 	if err != nil {
-		return "", "", err
+		return nil, nil, err
 	}
-
-	signature := signer.Sign(prv, []byte(inputValue))
-	return headerValue, signature, nil
+	return req, b, nil
 }

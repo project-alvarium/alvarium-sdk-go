@@ -2,11 +2,11 @@
   "signature": {
     "public": {
       "type": "ed25519",
-      "path": "../../../test/keys/ed25519/public.key"
+      "path": "../../../../test/keys/ed25519/public.key"
     },
     "private": {
       "type": "ed25519",
-      "path": "../../../test/keys/ed25519/private.key"
+      "path": "../../../../test/keys/ed25519/private.key"
     }
   }
 }

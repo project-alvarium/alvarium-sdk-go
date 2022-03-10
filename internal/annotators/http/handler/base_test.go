@@ -15,34 +15,23 @@
 package http
 
 import (
-	"encoding/json"
-	"io/ioutil"
+	"net/http"
 	"net/http/httptest"
 	"testing"
 
-	"github.com/project-alvarium/alvarium-sdk-go/pkg/config"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestHttpPkiAnnotator_RequestParser(t *testing.T) {
-	b, err := ioutil.ReadFile("./test/config.json")
-	if err != nil {
-		t.Fatalf(err.Error())
+	req := httptest.NewRequest("POST", "/foo?var1=&var2=2", nil)
+	req.Header = http.Header{
+		"Host":            []string{"example.com"},
+		"Date":            []string{"Tue, 20 Apr 2021 02:07:55 GMT"},
+		"Content-Type":    []string{"application/json"},
+		"Content-Length":  []string{"18"},
+		"Signature-Input": []string{""},
+		"Signature":       []string{"whatever"},
 	}
-
-	var cfg config.SdkInfo
-	err = json.Unmarshal(b, &cfg)
-	if err != nil {
-		t.Fatalf(err.Error())
-	}
-
-	base := httptest.NewRequest("POST", "/foo?var1=&var2=2", nil)
-
-	base.Header.Set("Host", "example.com")
-	base.Header.Set("Date", "Tue, 20 Apr 2021 02:07:55 GMT")
-	base.Header.Set("Content-Type", "application/json")
-	base.Header.Set("Content-Length", "18")
-	base.Header.Set("Signature", "whatever")
 
 	seedTests := []struct {
 		name           string
@@ -70,12 +59,10 @@ func TestHttpPkiAnnotator_RequestParser(t *testing.T) {
 	}
 
 	for _, tt := range seedTests {
-
-		req := base.Clone(base.Context())
 		req.Header.Set("Signature-Input", tt.signatureInput)
 
 		t.Run(tt.name, func(t *testing.T) {
-			signatureInfo, err := parseRequest(req)
+			signatureInfo, err := ParseSignature(req)
 			if tt.expectError {
 				assert.Error(t, err)
 			} else {
@@ -85,9 +72,11 @@ func TestHttpPkiAnnotator_RequestParser(t *testing.T) {
 
 	}
 
-	req := base.Clone(base.Context())
 	req.Header.Set("Signature-Input", "\"@query\";created=1644758607;keyid=\"public.key\";alg=\"ed25519\";")
-	parsed, err := parseRequest(req)
+	parsed, err := ParseSignature(req)
+	if err != nil {
+		t.Error(err.Error())
+	}
 
 	t.Run("testing signature", func(t *testing.T) {
 		assert.Equal(t, "whatever", parsed.Signature)

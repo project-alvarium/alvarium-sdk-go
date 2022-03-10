@@ -79,3 +79,29 @@ func (t AnnotationType) Validate() bool {
 	}
 	return false
 }
+
+type SpecialtyComponent string
+
+const (
+	Method        SpecialtyComponent = "@method"
+	Authority     SpecialtyComponent = "@authority"
+	Scheme        SpecialtyComponent = "@scheme"
+	RequestTarget SpecialtyComponent = "@request-target"
+	Path          SpecialtyComponent = "@path"
+	Query         SpecialtyComponent = "@query"
+	QueryParams   SpecialtyComponent = "@query-params"
+)
+
+const (
+	// HttpRequestKey is the key used to reference the value within the incoming Context that corresponds to the request we need to validate.
+	HttpRequestKey  string = "HttpRequestKey"
+	ContentLength   string = "Content-Length"
+	HttpContentType string = "Content-Type"
+)
+
+func (s SpecialtyComponent) Validate() bool {
+	if s == Method || s == Authority || s == Scheme || s == RequestTarget || s == Path || s == Query || s == QueryParams {
+		return true
+	}
+	return false
+}
