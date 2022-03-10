@@ -19,6 +19,8 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+
+	"github.com/project-alvarium/alvarium-sdk-go/pkg/contracts"
 )
 
 type parseResult struct {
@@ -28,11 +30,11 @@ type parseResult struct {
 	Algorithm string
 }
 
-func RemoveExtraSpaces(s string) string {
-	return strings.Join(strings.Fields(s), " ")
-}
+// ParseSignature returns an object that contains seed, signature, keyid and algorithm used in signing
+// builds the seed from the signatureInput header sent in the request,
+// extracts keyid and algorithm from the signatureInput, extracts the signature from the request.
 
-func parseRequest(r *http.Request) (parseResult, error) {
+func ParseSignature(r *http.Request) (parseResult, error) {
 	//Signature Inputs extraction
 	signatureInput := r.Header.Get("Signature-Input")
 	signature := r.Header.Get("Signature")
@@ -60,31 +62,31 @@ func parseRequest(r *http.Request) (parseResult, error) {
 
 	signatureInputFields := make(map[string][]string)
 
-	parsedSignatureInput := ""
+	var signatureInputBody strings.Builder
 	var s parseResult
 
 	for _, field := range signatureInputHeader {
 		//remove double quotes from the field to access it directly in the header map
 		key := field[1 : len(field)-1]
 		if key[0:1] == "@" {
-			switch specialtyComponent(key) {
-			case method:
+			switch contracts.SpecialtyComponent(key) {
+			case contracts.Method:
 				signatureInputFields[key] = []string{r.Method}
-			case authority:
+			case contracts.Authority:
 				signatureInputFields[key] = []string{r.Host}
-			case scheme:
+			case contracts.Scheme:
 				protool := r.Proto
 				scheme := strings.ToLower(strings.Split(protool, "/")[0])
 				signatureInputFields[key] = []string{scheme}
-			case requestTarget:
+			case contracts.RequestTarget:
 				signatureInputFields[key] = []string{r.RequestURI}
-			case path:
+			case contracts.Path:
 				signatureInputFields[key] = []string{r.URL.Path}
-			case query:
+			case contracts.Query:
 				var query string = "?"
 				query += r.URL.RawQuery
 				signatureInputFields[key] = []string{query}
-			case queryParams:
+			case contracts.QueryParams:
 				rawQueryParams := strings.Split(r.URL.RawQuery, "&")
 				var queryParams []string
 				for _, rawQueryParam := range rawQueryParams {
@@ -105,37 +107,42 @@ func parseRequest(r *http.Request) (parseResult, error) {
 			fieldValues := r.Header.Values(key)
 
 			if len(fieldValues) == 0 {
-				return s, fmt.Errorf("Unhandled Specialty Component %s", key)
+				return s, fmt.Errorf("Header field not found %s", key)
 			} else if len(fieldValues) == 1 {
-				value := RemoveExtraSpaces(r.Header.Get(key))
+				value := removeExtraSpaces(r.Header.Get(key))
 				signatureInputFields[key] = []string{value}
 
 			} else {
 
-				value := ""
+				var value strings.Builder
 				for i := 0; i < len(fieldValues); i++ {
-					value += fieldValues[i]
+					value.WriteString(fieldValues[i])
 					if i != (len(fieldValues) - 1) {
-						value += ", "
+						value.WriteString(", ")
 					}
 				}
-				value = RemoveExtraSpaces(value)
-				signatureInputFields[key] = []string{value}
+
+				fieldValue := removeExtraSpaces(value.String())
+				signatureInputFields[key] = []string{fieldValue}
 			}
 		}
 		// Construct final output string
 		keyValues := signatureInputFields[key]
 		if len(keyValues) == 1 {
-			parsedSignatureInput += ("\"" + key + "\" " + keyValues[0] + "\n")
+			signatureInputBody.WriteString("\"" + key + "\" " + keyValues[0] + "\n")
 		} else {
 			for _, v := range keyValues {
-				parsedSignatureInput += ("\"" + key + "\"" + v + "\n")
+				signatureInputBody.WriteString("\"" + key + "\"" + v + "\n")
 			}
 		}
 	}
 
-	parsedSignatureInput = fmt.Sprintf("%s;%s", parsedSignatureInput, signatureInputTail)
+	parsedSignatureInput := fmt.Sprintf("%s;%s", signatureInputBody.String(), signatureInputTail)
 	s = parseResult{Seed: parsedSignatureInput, Signature: signature, Keyid: keyid, Algorithm: algorithm}
 
 	return s, nil
+}
+
+func removeExtraSpaces(s string) string {
+	return strings.Join(strings.Fields(s), " ")
 }

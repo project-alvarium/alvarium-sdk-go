@@ -14,13 +14,17 @@
 package factories
 
 import (
+	"bytes"
+	"encoding/json"
+	"net/http/httptest"
+	"testing"
+
 	"github.com/project-alvarium/alvarium-sdk-go/pkg/config"
 	"github.com/project-alvarium/alvarium-sdk-go/pkg/contracts"
 	"github.com/project-alvarium/alvarium-sdk-go/test"
 	logConfig "github.com/project-alvarium/provider-logging/pkg/config"
 	logFactory "github.com/project-alvarium/provider-logging/pkg/factories"
 	"github.com/project-alvarium/provider-logging/pkg/logging"
-	"testing"
 )
 
 func TestStreamProviderFactory(t *testing.T) {
@@ -84,6 +88,40 @@ func TestAnnotatorFactory(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			_, err := NewAnnotator(tt.key, tt.cfg)
+			test.CheckError(err, tt.expectError, tt.name, t)
+		})
+	}
+}
+
+func TestRequestHandlerFactory(t *testing.T) {
+
+	type sample struct {
+		Key   string `json:"key"`
+		Value string `json:"value"`
+	}
+
+	a := sample{Key: "keyA", Value: "This is some test data"}
+	b, _ := json.Marshal(a)
+
+	req := httptest.NewRequest("POST", "/foo?param=value&foo=bar&baz=batman", bytes.NewReader(b))
+
+	cfg := config.SignatureInfo{}
+	pass := cfg
+	pass.PrivateKey.Type = contracts.KeyEd25519
+	fail := cfg
+	fail.PublicKey.Type = "invalid"
+
+	tests := []struct {
+		name        string
+		cfg         config.SignatureInfo
+		expectError bool
+	}{
+		{"valid ed25519 type", pass, false},
+		{"invalid key type", fail, true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := NewRequestHandler(req, tt.cfg)
 			test.CheckError(err, tt.expectError, tt.name, t)
 		})
 	}

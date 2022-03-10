@@ -11,30 +11,17 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  *******************************************************************************/
+package interfaces
 
-package http
+import (
+	"time"
 
-type specialtyComponent string
-
-const (
-	method        specialtyComponent = "@method"
-	authority     specialtyComponent = "@authority"
-	scheme        specialtyComponent = "@scheme"
-	requestTarget specialtyComponent = "@request-target"
-	path          specialtyComponent = "@path"
-	query         specialtyComponent = "@query"
-	queryParams   specialtyComponent = "@query-params"
+	"github.com/project-alvarium/alvarium-sdk-go/pkg/config"
 )
 
-const (
-	contentLength string = "Content-Length"
-	contentType   string = "Content-Type"
-	testRequest   string = "testRequest"
-)
-
-func (s specialtyComponent) Validate() bool {
-	if s == method || s == authority || s == scheme || s == requestTarget || s == path || s == query || s == queryParams {
-		return true
-	}
-	return false
+type RequestHandler interface {
+	// AddSignatureHeaders takes time of creation of request, the fields to be taken into consideration
+	// for the SignatureInput header, and the keys to be used in signing the seed.
+	// Assembles the SignatureInput and Signature fields, then adds them to the request as headers.
+	AddSignatureHeaders(ticks time.Time, fields []string, keys config.SignatureInfo) error
 }

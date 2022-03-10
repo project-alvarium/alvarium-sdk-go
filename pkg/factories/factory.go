@@ -17,14 +17,17 @@ package factories
 import (
 	"errors"
 	"fmt"
+	"net/http"
+
 	"github.com/project-alvarium/alvarium-sdk-go/internal/annotators"
+	httpAnnotators "github.com/project-alvarium/alvarium-sdk-go/internal/annotators/http"
+	handler "github.com/project-alvarium/alvarium-sdk-go/internal/annotators/http/handler"
 	"github.com/project-alvarium/alvarium-sdk-go/internal/iota"
 	"github.com/project-alvarium/alvarium-sdk-go/internal/mock"
 	"github.com/project-alvarium/alvarium-sdk-go/internal/mqtt"
 	"github.com/project-alvarium/alvarium-sdk-go/pkg/config"
 	"github.com/project-alvarium/alvarium-sdk-go/pkg/contracts"
 	"github.com/project-alvarium/alvarium-sdk-go/pkg/interfaces"
-	httpAnnotators "github.com/project-alvarium/alvarium-sdk-go/internal/annotators/http"
 	logInterface "github.com/project-alvarium/provider-logging/pkg/interfaces"
 )
 
@@ -70,4 +73,16 @@ func NewAnnotator(kind contracts.AnnotationType, cfg config.SdkInfo) (interfaces
 		return nil, fmt.Errorf("unrecognized AnnotationType %s", kind)
 	}
 	return a, nil
+}
+
+func NewRequestHandler(request *http.Request, keys config.SignatureInfo) (interfaces.RequestHandler, error) {
+	var r interfaces.RequestHandler
+
+	switch keys.PrivateKey.Type {
+	case contracts.KeyEd25519:
+		r = handler.NewEd25519RequestHandler(request)
+	default:
+		return nil, fmt.Errorf("unrecognized Key Type %s", keys.PrivateKey.Type)
+	}
+	return r, nil
 }

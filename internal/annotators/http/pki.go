@@ -25,6 +25,7 @@ import (
 	"strings"
 
 	"github.com/project-alvarium/alvarium-sdk-go/internal/annotators"
+	handler "github.com/project-alvarium/alvarium-sdk-go/internal/annotators/http/handler"
 	"github.com/project-alvarium/alvarium-sdk-go/internal/signprovider"
 	"github.com/project-alvarium/alvarium-sdk-go/internal/signprovider/ed25519"
 	"github.com/project-alvarium/alvarium-sdk-go/pkg/config"
@@ -52,8 +53,8 @@ func (a *HttpPkiAnnotator) Do(ctx context.Context, data []byte) (contracts.Annot
 	hostname, _ := os.Hostname()
 
 	//Call parser on request
-	req := ctx.Value(testRequest)
-	parsed, err := parseRequest(req.(*http.Request))
+	req := ctx.Value(contracts.HttpRequestKey)
+	parsed, err := handler.ParseSignature(req.(*http.Request))
 
 	if err != nil {
 		return contracts.Annotation{}, err
