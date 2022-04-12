@@ -23,9 +23,8 @@ import (
 )
 
 func TestHttpPkiAnnotator_RequestParser(t *testing.T) {
-	req := httptest.NewRequest("POST", "/foo?var1=&var2=2", nil)
+	req := httptest.NewRequest("POST", "http://www.example.com/foo?var1=&var2=2", nil)
 	req.Header = http.Header{
-		"Host":            []string{"example.com"},
 		"Date":            []string{"Tue, 20 Apr 2021 02:07:55 GMT"},
 		"Content-Type":    []string{"application/json"},
 		"Content-Length":  []string{"18"},
@@ -40,14 +39,13 @@ func TestHttpPkiAnnotator_RequestParser(t *testing.T) {
 		expectError    bool
 	}{
 		{"testing integeration of all Signature-Input fields",
-			"\"date\" \"@method\" \"@path\" \"@authority\" \"content-type\" \"content-length\" \"@query-params\" \"@query\";created=1644758607;keyid=\"public.key\";alg=\"ed25519\";",
-			"\"date\" Tue, 20 Apr 2021 02:07:55 GMT\n\"@method\" POST\n\"@path\" /foo\n\"@authority\" example.com\n\"content-type\" application/json\n\"content-length\" 18\n\"@query-params\";name=\"var1\": \n\"@query-params\";name=\"var2\": 2\n\"@query\" ?var1=&var2=2\n;created=1644758607;keyid=\"public.key\";alg=\"ed25519\";", false},
+			"\"date\" \"@method\" \"@path\" \"@authority\" \"@target-uri\" \"content-type\" \"content-length\" \"@query-params\" \"@query\";created=1644758607;keyid=\"public.key\";alg=\"ed25519\";",
+			"\"date\" Tue, 20 Apr 2021 02:07:55 GMT\n\"@method\" POST\n\"@path\" /foo\n\"@authority\" www.example.com\n\"@target-uri\" http://www.example.com/foo?var1=&var2=2\n\"content-type\" application/json\n\"content-length\" 18\n\"@query-params\";name=\"var1\": \n\"@query-params\";name=\"var2\": 2\n\"@query\" ?var1=&var2=2\n;created=1644758607;keyid=\"public.key\";alg=\"ed25519\";", false},
 
 		{"testing @method", "\"@method\";", "\"@method\" POST\n;", false},
-		{"testing @authority", "\"@authority\";", "\"@authority\" example.com\n;", false},
+		{"testing @authority", "\"@authority\";", "\"@authority\" www.example.com\n;", false},
 
 		{"testing @scheme", "\"@scheme\";", "\"@scheme\" http\n;", false},
-		{"testing @request-target", "\"@request-target\";", "\"@request-target\" /foo?var1=&var2=2\n;", false},
 
 		{"testing @path", "\"@path\";", "\"@path\" /foo\n;", false},
 
