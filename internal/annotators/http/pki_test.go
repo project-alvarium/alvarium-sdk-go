@@ -125,11 +125,10 @@ func buildRequest(keys config.SignatureInfo) (*http.Request, []byte, error) {
 	t := sample{Key: "keyA", Value: "This is some test data"}
 	b, _ := json.Marshal(t)
 
-	req := httptest.NewRequest("POST", "/foo?param=value&foo=bar&baz=batman", bytes.NewReader(b))
+	req := httptest.NewRequest("POST", "http://www.example.com/foo?var1=&var2=2", bytes.NewReader(b))
 	ticks := time.Now()
 	now := ticks.String()
 	req.Header = http.Header{
-		"Host":           []string{"example.com"},
 		"Date":           []string{now},
 		"Content-Type":   []string{string(contracts.ContentTypeJSON)},
 		"Content-Length": []string{strconv.FormatInt(req.ContentLength, 10)},

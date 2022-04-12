@@ -43,13 +43,14 @@ func TestHttpPkiAnnotator_AddSignatureHeaders(t *testing.T) {
 	}
 	ticks := time.Now()
 	now := ticks.String()
-	req := httptest.NewRequest("POST", "/foo?var1=&var2=2", nil)
+	req := httptest.NewRequest("POST", "http://www.example.com/foo?var1=&var2=2", nil)
+
 	req.Header = http.Header{
-		"Host":           []string{"example.com"},
 		"Date":           []string{now},
 		"Content-Type":   []string{string(contracts.ContentTypeJSON)},
 		"Content-Length": []string{strconv.FormatInt(req.ContentLength, 10)},
 	}
+
 	fields := []string{string(contracts.Method), string(contracts.Path), string(contracts.Authority), contracts.HttpContentType, contracts.ContentLength}
 	keys := cfg.Signature
 	instance := NewEd25519RequestHandler(req)

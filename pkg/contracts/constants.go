@@ -80,16 +80,16 @@ func (t AnnotationType) Validate() bool {
 	return false
 }
 
-type SpecialtyComponent string
+type DerivedComponent string
 
 const (
-	Method        SpecialtyComponent = "@method"
-	Authority     SpecialtyComponent = "@authority"
-	Scheme        SpecialtyComponent = "@scheme"
-	RequestTarget SpecialtyComponent = "@request-target"
-	Path          SpecialtyComponent = "@path"
-	Query         SpecialtyComponent = "@query"
-	QueryParams   SpecialtyComponent = "@query-params"
+	Method      DerivedComponent = "@method"
+	TargetURI   DerivedComponent = "@target-uri"
+	Authority   DerivedComponent = "@authority"
+	Scheme      DerivedComponent = "@scheme"
+	Path        DerivedComponent = "@path"
+	Query       DerivedComponent = "@query"
+	QueryParams DerivedComponent = "@query-params"
 )
 
 const (
@@ -99,8 +99,8 @@ const (
 	HttpContentType string = "Content-Type"
 )
 
-func (s SpecialtyComponent) Validate() bool {
-	if s == Method || s == Authority || s == Scheme || s == RequestTarget || s == Path || s == Query || s == QueryParams {
+func (d DerivedComponent) Validate() bool {
+	if d == Method || d == Authority || d == TargetURI || d == Scheme || d == Path || d == Query || d == QueryParams {
 		return true
 	}
 	return false

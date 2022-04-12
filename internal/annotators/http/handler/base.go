@@ -65,21 +65,23 @@ func ParseSignature(r *http.Request) (parseResult, error) {
 	var signatureInputBody strings.Builder
 	var s parseResult
 
+	if !r.URL.IsAbs() {
+		return s, fmt.Errorf("URL is not absolute")
+	}
+
 	for _, field := range signatureInputHeader {
 		//remove double quotes from the field to access it directly in the header map
 		key := field[1 : len(field)-1]
 		if key[0:1] == "@" {
-			switch contracts.SpecialtyComponent(key) {
+			switch contracts.DerivedComponent(key) {
 			case contracts.Method:
 				signatureInputFields[key] = []string{r.Method}
+			case contracts.TargetURI:
+				signatureInputFields[key] = []string{r.URL.String()}
 			case contracts.Authority:
 				signatureInputFields[key] = []string{r.Host}
 			case contracts.Scheme:
-				protool := r.Proto
-				scheme := strings.ToLower(strings.Split(protool, "/")[0])
-				signatureInputFields[key] = []string{scheme}
-			case contracts.RequestTarget:
-				signatureInputFields[key] = []string{r.RequestURI}
+				signatureInputFields[key] = []string{r.URL.Scheme}
 			case contracts.Path:
 				signatureInputFields[key] = []string{r.URL.Path}
 			case contracts.Query:
