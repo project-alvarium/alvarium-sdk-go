@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2023 Dell Inc.
+ * Copyright 2024 Dell Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -18,6 +18,21 @@ type ContentType string
 const (
 	ContentTypeJSON ContentType = "application/json"
 )
+
+type NetType string
+
+const (
+	Mainnet    NetType = "mainnet"
+	Testnet    NetType = "testnet"
+	Previewnet NetType = "previewnet"
+)
+
+func (t NetType) Validate() bool {
+	if t == Mainnet || t == Testnet || t == Previewnet {
+		return true
+	}
+	return false
+}
 
 type HashType string
 
@@ -54,10 +69,14 @@ const (
 	MockStream    StreamType = "mock"
 	MqttStream    StreamType = "mqtt"
 	PravegaStream StreamType = "pravega" // Currently unsupported but indicating extension point
+	HederaStream  StreamType = "hedera"
 )
 
 func (t StreamType) Validate() bool {
-	return t == MockStream || t == MqttStream || t == PravegaStream || t == ConsoleStream
+	if t == MockStream || t == MqttStream || t == PravegaStream || t == ConsoleStream || t == HederaStream {
+		return true
+	}
+	return false
 }
 
 type AnnotationType string
