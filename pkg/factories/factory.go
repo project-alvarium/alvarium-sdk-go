@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2023 Dell Inc.
+ * Copyright 2024 Dell Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -17,12 +17,14 @@ package factories
 import (
 	"errors"
 	"fmt"
-	"github.com/project-alvarium/alvarium-sdk-go/internal/console"
 	"net/http"
+
+	"github.com/project-alvarium/alvarium-sdk-go/internal/console"
 
 	"github.com/project-alvarium/alvarium-sdk-go/internal/annotators"
 	httpAnnotators "github.com/project-alvarium/alvarium-sdk-go/internal/annotators/http"
 	handler "github.com/project-alvarium/alvarium-sdk-go/internal/annotators/http/handler"
+	"github.com/project-alvarium/alvarium-sdk-go/internal/hedera"
 	"github.com/project-alvarium/alvarium-sdk-go/internal/mock"
 	"github.com/project-alvarium/alvarium-sdk-go/internal/mqtt"
 	"github.com/project-alvarium/alvarium-sdk-go/pkg/config"
@@ -47,6 +49,12 @@ func NewStreamProvider(cfg config.StreamInfo, logger interfaces.Logger) (interfa
 		return mqtt.NewMqttPublisher(info, logger), nil
 	case contracts.ConsoleStream:
 		return console.NewConsolePublisher(logger), nil
+	case contracts.HederaStream:
+		info, ok := cfg.Config.(config.HederaConfig)
+		if !ok {
+			return nil, errors.New("invalid cast for HederaStream")
+		}
+		return hedera.NewHederaPublisher(info, logger)
 	default:
 		return nil, fmt.Errorf("unrecognized config Type value %s", cfg.Type)
 	}
