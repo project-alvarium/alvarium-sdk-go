@@ -48,7 +48,7 @@ func NewStreamProvider(cfg config.StreamInfo, logger logInterface.Logger) (inter
 	case contracts.MqttStream:
 		info, ok := cfg.Config.(config.MqttConfig)
 		if !ok {
-			return nil, errors.New("invalid cast for MockStream")
+			return nil, errors.New("invalid cast for MqttStream")
 		}
 		return mqtt.NewMqttPublisher(info, logger), nil
 	default:
