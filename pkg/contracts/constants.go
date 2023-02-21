@@ -74,7 +74,7 @@ const (
 )
 
 func (t AnnotationType) Validate() bool {
-	if t == AnnotationPKI || t == AnnotationTLS || t == AnnotationTPM || t == AnnotationSource {
+	if t == AnnotationPKI || t == AnnotationTLS || t == AnnotationTPM || t == AnnotationSource || t == AnnotationPKIHttp {
 		return true
 	}
 	return false
