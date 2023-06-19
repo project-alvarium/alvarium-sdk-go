@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2021 Dell Inc.
+ * Copyright 2023 Dell Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -16,7 +16,8 @@ package pkg
 import (
 	"context"
 	"encoding/json"
-	"io/ioutil"
+	"gopkg.in/yaml.v3"
+	"os"
 	"sync"
 	"testing"
 
@@ -30,11 +31,11 @@ import (
 	"github.com/project-alvarium/provider-logging/pkg/logging"
 )
 
-func TestNewSdk(t *testing.T) {
+func TestNewSdkJson(t *testing.T) {
 	logInfo := logConfig.LoggingInfo{MinLogLevel: logging.InfoLevel}
 	logger := logFactory.NewLogger(logInfo)
 
-	b, err := ioutil.ReadFile("../test/res/config.json")
+	b, err := os.ReadFile("../test/res/config.json")
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
@@ -46,7 +47,57 @@ func TestNewSdk(t *testing.T) {
 	}
 
 	pass := cfg
-	pass.Stream.Type = contracts.MockStream
+
+	fail := cfg
+	fail.Stream.Type = "invalid"
+
+	tests := []struct {
+		name         string
+		cfg          config.SdkInfo
+		log          logInterface.Logger
+		expectResult bool
+	}{
+		{"new sdk valid params", pass, logger, true},
+		{"new sdk invalid params", fail, logger, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			annotator, err := factories.NewAnnotator(contracts.AnnotationTPM, tt.cfg)
+			if err != nil {
+				t.Fatalf(err.Error())
+			}
+			anno := []interfaces.Annotator{
+				annotator,
+			}
+			instance := NewSdk(anno, tt.cfg, tt.log)
+			var wg sync.WaitGroup
+			wg.Add(1)
+			defer wg.Done()
+
+			result := instance.BootstrapHandler(context.Background(), &wg)
+			if result != tt.expectResult {
+				t.Errorf("unexpected result: %v", result)
+			}
+		})
+	}
+}
+
+func TestNewSdkYaml(t *testing.T) {
+	logInfo := logConfig.LoggingInfo{MinLogLevel: logging.InfoLevel}
+	logger := logFactory.NewLogger(logInfo)
+
+	b, err := os.ReadFile("../test/res/config.yaml")
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+
+	var cfg config.SdkInfo
+	err = yaml.Unmarshal(b, &cfg)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+
+	pass := cfg
 
 	fail := cfg
 	fail.Stream.Type = "invalid"
