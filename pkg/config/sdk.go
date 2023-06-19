@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2021 Dell Inc.
+ * Copyright 2023 Dell Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -11,19 +11,21 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  *******************************************************************************/
+
 package config
 
 import (
 	"encoding/json"
 	"fmt"
 	"github.com/project-alvarium/alvarium-sdk-go/pkg/contracts"
+	"gopkg.in/yaml.v3"
 )
 
 type SdkInfo struct {
-	Annotators []contracts.AnnotationType `json:"annotators,omitempty"`
-	Hash       HashInfo                   `json:"hash,omitempty"`
-	Signature  SignatureInfo              `json:"signature,omitempty"`
-	Stream     StreamInfo                 `json:"stream,omitempty"`
+	Annotators []contracts.AnnotationType `json:"annotators,omitempty" yaml:"annotators"`
+	Hash       HashInfo                   `json:"hash,omitempty" yaml:"hash"`
+	Signature  SignatureInfo              `json:"signature,omitempty" yaml:"signature"`
+	Stream     StreamInfo                 `json:"stream,omitempty" yaml:"stream"`
 }
 
 func (s *SdkInfo) UnmarshalJSON(data []byte) (err error) {
@@ -36,6 +38,34 @@ func (s *SdkInfo) UnmarshalJSON(data []byte) (err error) {
 	a := Alias{}
 	// Error with unmarshaling
 	if err = json.Unmarshal(data, &a); err != nil {
+		return err
+	}
+
+	if len(a.Annotators) > 0 {
+		for _, x := range a.Annotators {
+			ok := x.Validate()
+			if !ok {
+				return fmt.Errorf("invalid AnnotationType received %s", x)
+			}
+		}
+	}
+	s.Annotators = a.Annotators
+	s.Hash = a.Hash
+	s.Signature = a.Signature
+	s.Stream = a.Stream
+	return nil
+}
+
+func (s *SdkInfo) UnmarshalYAML(data *yaml.Node) (err error) {
+	type Alias struct {
+		Annotators []contracts.AnnotationType `yaml:"annotators"`
+		Hash       HashInfo                   `yaml:"hash"`
+		Signature  SignatureInfo              `yaml:"signature"`
+		Stream     StreamInfo                 `yaml:"stream"`
+	}
+	a := Alias{}
+	// Error with unmarshaling
+	if err = data.Decode(&a); err != nil {
 		return err
 	}
 

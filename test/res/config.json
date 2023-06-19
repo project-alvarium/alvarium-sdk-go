@@ -14,19 +14,13 @@
     }
   },
   "stream": {
-    "type": "iota",
+    "type": "mock",
     "config": {
       "provider": {
         "host": "localhost",
         "protocol": "http",
         "port": 8080
-      },
-      "tangle": {
-        "host": "localhost",
-        "protocol": "http",
-        "port": 8080
-      },
-      "encoding": "utf-8"
+      }
     }
   }
 }

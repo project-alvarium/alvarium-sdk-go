@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2021 Dell Inc.
+ * Copyright 2023 Dell Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -11,16 +11,18 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  *******************************************************************************/
+
 package config
 
 import (
 	"encoding/json"
 	"fmt"
 	"github.com/project-alvarium/alvarium-sdk-go/pkg/contracts"
+	"gopkg.in/yaml.v3"
 )
 
 type HashInfo struct {
-	Type contracts.HashType `json:"type,omitempty"`
+	Type contracts.HashType `json:"type,omitempty" yaml:"type"`
 }
 
 func (h *HashInfo) UnmarshalJSON(data []byte) (err error) {
@@ -30,6 +32,23 @@ func (h *HashInfo) UnmarshalJSON(data []byte) (err error) {
 
 	a := Alias{}
 	if err = json.Unmarshal(data, &a); err != nil {
+		return err
+	}
+
+	if !a.Type.Validate() {
+		return fmt.Errorf("invalid HashType value provided %s", a.Type)
+	}
+	h.Type = a.Type
+	return nil
+}
+
+func (h *HashInfo) UnmarshalYAML(data *yaml.Node) (err error) {
+	type Alias struct {
+		Type contracts.HashType `yaml:"type"`
+	}
+
+	a := Alias{}
+	if err = data.Decode(&a); err != nil {
 		return err
 	}
 
