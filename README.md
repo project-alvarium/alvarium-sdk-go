@@ -1,18 +1,6 @@
 # alvarium-sdk-go
 
-This is a re-implementation of the Alvarium SDK in Go. It borrows conceptually from the [original implementation](https://github.com/project-alvarium/go-sdk) while updating
-functionality for [IOTA Streams](https://github.com/iotaledger/streams) support.
-
-A direct link to the IOTA C bindings directory is [here](https://github.com/iotaledger/streams/tree/v1.1.0/bindings/c).
-
-**Environment Variable Setup**
-
-In order to execute the unit tests for the SDK, you will need to export an environment variable that points to the directory containing the C bindings once they have been compiled.
-As an example from my local machine, I have put the following directive into my `~/.profile`
-
-`export LD_LIBRARY_PATH=/home/developer/Documents/github/project-alvarium/alvarium-sdk-go/internal/iota/include`
-
-This variable is necessary for `make test` to execute a build prior to running the suite of unit tests
+This is a re-implementation of the Alvarium SDK in Go. It borrows conceptually from the [original implementation](https://github.com/project-alvarium/go-sdk).
 
 # SDK Interface
 

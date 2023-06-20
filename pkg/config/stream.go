@@ -17,6 +17,7 @@ package config
 import (
 	"encoding/json"
 	"fmt"
+
 	"github.com/project-alvarium/alvarium-sdk-go/pkg/contracts"
 	"gopkg.in/yaml.v3"
 )
@@ -41,20 +42,7 @@ func (s *StreamInfo) UnmarshalJSON(data []byte) (err error) {
 		return fmt.Errorf("invalid StreamType value provided %s", a.Type)
 	}
 
-	if a.Type == contracts.IotaStream {
-		type iotaAlias struct {
-			Type   contracts.StreamType `json:"type,omitempty"`
-			Config IotaStreamConfig     `json:"config,omitempty"`
-		}
-
-		i := iotaAlias{}
-		// Error with unmarshaling
-		if err = json.Unmarshal(data, &i); err != nil {
-			return err
-		}
-		s.Type = i.Type
-		s.Config = i.Config
-	} else if a.Type == contracts.MqttStream {
+	if a.Type == contracts.MqttStream {
 		type mqttAlias struct {
 			Type   contracts.StreamType `json:"type,omitempty"`
 			Config MqttConfig           `json:"config,omitempty"`
@@ -100,20 +88,7 @@ func (s *StreamInfo) UnmarshalYAML(data *yaml.Node) (err error) {
 		return fmt.Errorf("invalid StreamType value provided %s", a.Type)
 	}
 
-	if a.Type == contracts.IotaStream {
-		type iotaAlias struct {
-			Type   contracts.StreamType `yaml:"type"`
-			Config IotaStreamConfig     `yaml:"config"`
-		}
-
-		i := iotaAlias{}
-		// Error with unmarshaling
-		if err = data.Decode(&i); err != nil {
-			return err
-		}
-		s.Type = i.Type
-		s.Config = i.Config
-	} else if a.Type == contracts.MqttStream {
+	if a.Type == contracts.MqttStream {
 		type mqttAlias struct {
 			Type   contracts.StreamType `yaml:"type"`
 			Config MqttConfig           `yaml:"config"`
@@ -143,13 +118,6 @@ func (s *StreamInfo) UnmarshalYAML(data *yaml.Node) (err error) {
 	}
 
 	return nil
-}
-
-// IotaStreamConfig exposes properties relevant to connecting to an existing IOTA Stream and accompanying Tangle node
-type IotaStreamConfig struct {
-	Provider   ServiceInfo `json:"provider,omitempty" yaml:"provider"` // Provider is the endpoint from which the Streams subscription is obtained
-	TangleNode ServiceInfo `json:"tangle,omitempty" yaml:"tangle"`     // TangleNode is the endpoint of the local Hornet instance. Transactions are written here.
-	Encoding   string      `json:"encoding,omitempty" yaml:"encoding"` // Encoding specifies the encoding of transaction messages
 }
 
 // MqttConfig exposes properties relevant to connecting to an existing MQTT broker
