@@ -32,23 +32,23 @@ func TestStreamProviderFactory(t *testing.T) {
 	logger := logFactory.NewLogger(logInfo)
 
 	pass := config.StreamInfo{
-		Type:   contracts.IotaStream,
-		Config: config.IotaStreamConfig{},
-	}
-
-	pass2 := config.StreamInfo{
 		Type:   contracts.MockStream,
 		Config: config.MockStreamConfig{},
 	}
 
-	pass3 := config.StreamInfo{
+	pass2 := config.StreamInfo{
 		Type:   contracts.MqttStream,
 		Config: config.MqttConfig{},
 	}
 
 	fail := config.StreamInfo{
 		Type:   "invalid",
-		Config: config.IotaStreamConfig{},
+		Config: config.MqttConfig{},
+	}
+
+	fail2 := config.StreamInfo{
+		Type:   "pravega",
+		Config: config.MockStreamConfig{},
 	}
 
 	tests := []struct {
@@ -56,10 +56,10 @@ func TestStreamProviderFactory(t *testing.T) {
 		providerType config.StreamInfo
 		expectError  bool
 	}{
-		{"valid iota type", pass, false},
-		{"valid mock type", pass2, false},
-		{"valid mqtt type", pass3, false},
+		{"valid mock type", pass, false},
+		{"valid mqtt type", pass2, false},
 		{"invalid random type", fail, true},
+		{"unimplemented pravega type", fail2, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

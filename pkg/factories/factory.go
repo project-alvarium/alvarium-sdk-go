@@ -22,7 +22,6 @@ import (
 	"github.com/project-alvarium/alvarium-sdk-go/internal/annotators"
 	httpAnnotators "github.com/project-alvarium/alvarium-sdk-go/internal/annotators/http"
 	handler "github.com/project-alvarium/alvarium-sdk-go/internal/annotators/http/handler"
-	"github.com/project-alvarium/alvarium-sdk-go/internal/iota"
 	"github.com/project-alvarium/alvarium-sdk-go/internal/mock"
 	"github.com/project-alvarium/alvarium-sdk-go/internal/mqtt"
 	"github.com/project-alvarium/alvarium-sdk-go/pkg/config"
@@ -33,12 +32,6 @@ import (
 
 func NewStreamProvider(cfg config.StreamInfo, logger logInterface.Logger) (interfaces.StreamProvider, error) {
 	switch cfg.Type {
-	case contracts.IotaStream:
-		info, ok := cfg.Config.(config.IotaStreamConfig)
-		if !ok {
-			return nil, errors.New("invalid cast for IotaStream")
-		}
-		return iota.NewIotaPublisher(info, logger)
 	case contracts.MockStream:
 		info, ok := cfg.Config.(config.MockStreamConfig)
 		if !ok {

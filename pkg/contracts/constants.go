@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2021 Dell Inc.
+ * Copyright 2023 Dell Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -50,17 +50,13 @@ func (k KeyAlgorithm) Validate() bool {
 type StreamType string
 
 const (
-	IotaStream    StreamType = "iota"
 	MockStream    StreamType = "mock"
 	MqttStream    StreamType = "mqtt"
 	PravegaStream StreamType = "pravega" // Currently unsupported but indicating extension point
 )
 
 func (t StreamType) Validate() bool {
-	if t == IotaStream || t == MockStream || t == MqttStream || t == PravegaStream {
-		return true
-	}
-	return false
+	return t == MockStream || t == MqttStream || t == PravegaStream
 }
 
 type AnnotationType string
