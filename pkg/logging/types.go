@@ -11,35 +11,14 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  *******************************************************************************/
+package logging
 
-package mock
+type LogKey string
 
-import (
-	"github.com/project-alvarium/alvarium-sdk-go/pkg/config"
-	"github.com/project-alvarium/alvarium-sdk-go/pkg/interfaces"
-	"github.com/project-alvarium/alvarium-sdk-go/pkg/message"
+const (
+	CorrelationKey LogKey = "correlation-id"
+
+	lineNumberAttrKey  = "line-number"
+	applicationAttrKey = "application"
+	hostnameAttrKey    = "hostname"
 )
-
-type mockPublisher struct {
-	cfg    config.MockStreamConfig
-	logger interfaces.Logger
-}
-
-func NewMockPublisher(cfg config.MockStreamConfig, logger interfaces.Logger) (interfaces.StreamProvider, error) {
-	return &mockPublisher{
-		cfg:    cfg,
-		logger: logger,
-	}, nil
-}
-
-func (p *mockPublisher) Connect() error {
-	return nil
-}
-
-func (p *mockPublisher) Publish(msg message.PublishWrapper) error {
-	return nil
-}
-
-func (p *mockPublisher) Close() error {
-	return nil
-}

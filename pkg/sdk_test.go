@@ -16,24 +16,21 @@ package pkg
 import (
 	"context"
 	"encoding/json"
-	"gopkg.in/yaml.v3"
+	"log/slog"
 	"os"
 	"sync"
 	"testing"
+
+	"gopkg.in/yaml.v3"
 
 	"github.com/project-alvarium/alvarium-sdk-go/pkg/config"
 	"github.com/project-alvarium/alvarium-sdk-go/pkg/contracts"
 	"github.com/project-alvarium/alvarium-sdk-go/pkg/factories"
 	"github.com/project-alvarium/alvarium-sdk-go/pkg/interfaces"
-	logConfig "github.com/project-alvarium/provider-logging/pkg/config"
-	logFactory "github.com/project-alvarium/provider-logging/pkg/factories"
-	logInterface "github.com/project-alvarium/provider-logging/pkg/interfaces"
-	"github.com/project-alvarium/provider-logging/pkg/logging"
 )
 
 func TestNewSdkJson(t *testing.T) {
-	logInfo := logConfig.LoggingInfo{MinLogLevel: logging.InfoLevel}
-	logger := logFactory.NewLogger(logInfo)
+	logger := factories.NewLogger(config.LoggingInfo{MinLogLevel: slog.LevelInfo})
 
 	b, err := os.ReadFile("../test/res/config.json")
 	if err != nil {
@@ -54,7 +51,7 @@ func TestNewSdkJson(t *testing.T) {
 	tests := []struct {
 		name         string
 		cfg          config.SdkInfo
-		log          logInterface.Logger
+		log          interfaces.Logger
 		expectResult bool
 	}{
 		{"new sdk valid params", pass, logger, true},
@@ -83,8 +80,7 @@ func TestNewSdkJson(t *testing.T) {
 }
 
 func TestNewSdkYaml(t *testing.T) {
-	logInfo := logConfig.LoggingInfo{MinLogLevel: logging.InfoLevel}
-	logger := logFactory.NewLogger(logInfo)
+	logger := factories.NewLogger(config.LoggingInfo{MinLogLevel: slog.LevelInfo})
 
 	b, err := os.ReadFile("../test/res/config.yaml")
 	if err != nil {
@@ -105,7 +101,7 @@ func TestNewSdkYaml(t *testing.T) {
 	tests := []struct {
 		name         string
 		cfg          config.SdkInfo
-		log          logInterface.Logger
+		log          interfaces.Logger
 		expectResult bool
 	}{
 		{"new sdk valid params", pass, logger, true},

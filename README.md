@@ -9,7 +9,7 @@ The SDK provides a minimal API -- NewSdk(), Create(), Mutate(), Transit(), Publi
 ### NewSdk()
 
 ```go
-func NewSdk(annotators []annotator.Contract, cfg config.SdkInfo, logger logInterface.Logger) interfaces.Sdk
+func NewSdk(annotators []annotator.Contract, cfg config.SdkInfo, logger interfaces.Logger) interfaces.Sdk
 ```
 
 Used to instantiate a new SDK instance with the specified list of annotators.
