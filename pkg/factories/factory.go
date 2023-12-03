@@ -27,10 +27,10 @@ import (
 	"github.com/project-alvarium/alvarium-sdk-go/pkg/config"
 	"github.com/project-alvarium/alvarium-sdk-go/pkg/contracts"
 	"github.com/project-alvarium/alvarium-sdk-go/pkg/interfaces"
-	logInterface "github.com/project-alvarium/provider-logging/pkg/interfaces"
+	"github.com/project-alvarium/alvarium-sdk-go/pkg/logging"
 )
 
-func NewStreamProvider(cfg config.StreamInfo, logger logInterface.Logger) (interfaces.StreamProvider, error) {
+func NewStreamProvider(cfg config.StreamInfo, logger interfaces.Logger) (interfaces.StreamProvider, error) {
 	switch cfg.Type {
 	case contracts.MockStream:
 		info, ok := cfg.Config.(config.MockStreamConfig)
@@ -78,4 +78,8 @@ func NewRequestHandler(request *http.Request, keys config.SignatureInfo) (interf
 		return nil, fmt.Errorf("unrecognized Key Type %s", keys.PrivateKey.Type)
 	}
 	return r, nil
+}
+
+func NewLogger(cfg config.LoggingInfo) interfaces.Logger {
+	return logging.NewConsoleLogger(cfg)
 }

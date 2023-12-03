@@ -16,13 +16,13 @@ package mqtt
 import (
 	"encoding/json"
 	"fmt"
+	"log/slog"
+	"time"
+
 	MQTT "github.com/eclipse/paho.mqtt.golang"
 	"github.com/project-alvarium/alvarium-sdk-go/pkg/config"
 	"github.com/project-alvarium/alvarium-sdk-go/pkg/interfaces"
 	"github.com/project-alvarium/alvarium-sdk-go/pkg/message"
-	logInterface "github.com/project-alvarium/provider-logging/pkg/interfaces"
-	"github.com/project-alvarium/provider-logging/pkg/logging"
-	"time"
 )
 
 const (
@@ -32,11 +32,11 @@ const (
 
 type mqttPublisher struct {
 	endpoint   config.MqttConfig
-	logger     logInterface.Logger
+	logger     interfaces.Logger
 	mqttClient MQTT.Client
 }
 
-func NewMqttPublisher(cfg config.MqttConfig, logger logInterface.Logger) interfaces.StreamProvider {
+func NewMqttPublisher(cfg config.MqttConfig, logger interfaces.Logger) interfaces.StreamProvider {
 	opts := MQTT.NewClientOptions()
 	opts.AddBroker(cfg.Provider.Uri())
 	opts.SetClientID(cfg.ClientId)
@@ -68,7 +68,7 @@ func (p *mqttPublisher) Publish(msg message.PublishWrapper) error {
 	b, _ := json.Marshal(msg)
 	// publish to all topics
 	for _, topic := range p.endpoint.Topics {
-		p.logger.Write(logging.DebugLevel, fmt.Sprintf("attempting publish, topic %s %s", topic, string(b)))
+		p.logger.Write(slog.LevelDebug, fmt.Sprintf("attempting publish, topic %s %s", topic, string(b)))
 		token := p.mqttClient.Publish(topic, byte(p.endpoint.Qos), false, b)
 		token.WaitTimeout(time.Millisecond * publishTimeout)
 	}

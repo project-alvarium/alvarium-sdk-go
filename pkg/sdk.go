@@ -17,6 +17,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"sync"
 
 	"github.com/project-alvarium/alvarium-sdk-go/pkg/config"
@@ -24,18 +25,16 @@ import (
 	"github.com/project-alvarium/alvarium-sdk-go/pkg/factories"
 	"github.com/project-alvarium/alvarium-sdk-go/pkg/interfaces"
 	"github.com/project-alvarium/alvarium-sdk-go/pkg/message"
-	logInterface "github.com/project-alvarium/provider-logging/pkg/interfaces"
-	"github.com/project-alvarium/provider-logging/pkg/logging"
 )
 
 type sdk struct {
 	annotators []interfaces.Annotator
 	cfg        config.SdkInfo
 	stream     interfaces.StreamProvider
-	logger     logInterface.Logger
+	logger     interfaces.Logger
 }
 
-func NewSdk(annotators []interfaces.Annotator, cfg config.SdkInfo, logger logInterface.Logger) interfaces.Sdk {
+func NewSdk(annotators []interfaces.Annotator, cfg config.SdkInfo, logger interfaces.Logger) interfaces.Sdk {
 	instance := sdk{
 		annotators: annotators,
 		cfg:        cfg,
@@ -57,14 +56,14 @@ func (s *sdk) BootstrapHandler(ctx context.Context, wg *sync.WaitGroup) bool {
 		s.logger.Error(err.Error())
 		return false
 	}
-	s.logger.Write(logging.DebugLevel, "stream provider connection successful")
+	s.logger.Write(slog.LevelDebug, "stream provider connection successful")
 
 	wg.Add(1)
 	go func() { // Graceful shutdown
 		defer wg.Done()
 
 		<-ctx.Done()
-		s.logger.Write(logging.InfoLevel, "shutdown received")
+		s.logger.Write(slog.LevelInfo, "shutdown received")
 		s.stream.Close()
 	}()
 	return true

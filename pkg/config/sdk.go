@@ -17,6 +17,8 @@ package config
 import (
 	"encoding/json"
 	"fmt"
+	"log/slog"
+
 	"github.com/project-alvarium/alvarium-sdk-go/pkg/contracts"
 	"gopkg.in/yaml.v3"
 )
@@ -26,6 +28,10 @@ type SdkInfo struct {
 	Hash       HashInfo                   `json:"hash,omitempty" yaml:"hash"`
 	Signature  SignatureInfo              `json:"signature,omitempty" yaml:"signature"`
 	Stream     StreamInfo                 `json:"stream,omitempty" yaml:"stream"`
+}
+
+type LoggingInfo struct {
+	MinLogLevel slog.Level `json:"minLogLevel,omitempty"`
 }
 
 func (s *SdkInfo) UnmarshalJSON(data []byte) (err error) {
