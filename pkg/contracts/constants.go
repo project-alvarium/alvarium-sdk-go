@@ -74,10 +74,12 @@ const (
 )
 
 func (t AnnotationType) Validate() bool {
-	if t == AnnotationPKI || t == AnnotationTLS || t == AnnotationTPM || t == AnnotationSource || t == AnnotationPKIHttp || t == AnnotationSourceCode || t == AnnotationChecksum || t == AnnotationVulnerability {
+	switch t {
+	case AnnotationPKI, AnnotationTLS, AnnotationTPM, AnnotationSource, AnnotationPKIHttp, AnnotationSourceCode, AnnotationChecksum, AnnotationVulnerability:
 		return true
+	default:
+		return false
 	}
-	return false
 }
 
 type DerivedComponent string
