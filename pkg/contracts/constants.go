@@ -67,13 +67,19 @@ const (
 	AnnotationSource  AnnotationType = "src"
 	AnnotationTLS     AnnotationType = "tls"
 	AnnotationTPM     AnnotationType = "tpm"
+	// The AnnotationSourceCode, AnnotationChecksum, and AnnotationVulnerability values are used by the scoring apps, they are for CI/CD annotators defined in alvarium-sdk-java project.
+	AnnotationSourceCode    AnnotationType = "source-code"
+	AnnotationChecksum      AnnotationType = "checksum"
+	AnnotationVulnerability AnnotationType = "vulnerability"
 )
 
 func (t AnnotationType) Validate() bool {
-	if t == AnnotationPKI || t == AnnotationTLS || t == AnnotationTPM || t == AnnotationSource || t == AnnotationPKIHttp {
+	switch t {
+	case AnnotationPKI, AnnotationTLS, AnnotationTPM, AnnotationSource, AnnotationPKIHttp, AnnotationSourceCode, AnnotationChecksum, AnnotationVulnerability:
 		return true
+	default:
+		return false
 	}
-	return false
 }
 
 type DerivedComponent string
