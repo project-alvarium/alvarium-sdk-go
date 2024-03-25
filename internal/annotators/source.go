@@ -24,9 +24,10 @@ import (
 
 // SourceAnnotator is used to provide lineage from one version of data to another as the result of a change or transformation.
 type SourceAnnotator struct {
-	hash contracts.HashType
-	kind contracts.AnnotationType
-	sign config.SignatureInfo
+	hash  contracts.HashType
+	kind  contracts.AnnotationType
+	sign  config.SignatureInfo
+	layer contracts.LayerType
 }
 
 func NewSourceAnnotator(cfg config.SdkInfo) interfaces.Annotator {
@@ -34,6 +35,7 @@ func NewSourceAnnotator(cfg config.SdkInfo) interfaces.Annotator {
 	a.hash = cfg.Hash.Type
 	a.kind = contracts.AnnotationSource
 	a.sign = cfg.Signature
+	a.layer = cfg.StackLayer
 	return &a
 }
 
@@ -42,7 +44,7 @@ func (a *SourceAnnotator) Do(ctx context.Context, data []byte) (contracts.Annota
 	hostname, _ := os.Hostname()
 	tag := os.Getenv(contracts.TagEnvKey)
 
-	annotation := contracts.NewAnnotation(key, a.hash, hostname, tag, a.kind, true)
+	annotation := contracts.NewAnnotation(key, a.hash, hostname, tag, a.layer, a.kind, true)
 	sig, err := SignAnnotation(a.sign.PrivateKey, annotation)
 	if err != nil {
 		return contracts.Annotation{}, err
