@@ -1,5 +1,7 @@
 {
-  "annotators": ["tpm","pki"],
+  "annotators": {
+    "basic": ["tpm","pki"]
+  },
   "hash": {
     "type": "sha256"
   },

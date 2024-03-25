@@ -24,10 +24,15 @@ import (
 )
 
 type SdkInfo struct {
-	Annotators []contracts.AnnotationType `json:"annotators,omitempty" yaml:"annotators"`
-	Hash       HashInfo                   `json:"hash,omitempty" yaml:"hash"`
-	Signature  SignatureInfo              `json:"signature,omitempty" yaml:"signature"`
-	Stream     StreamInfo                 `json:"stream,omitempty" yaml:"stream"`
+	Annotators AnnotatorInfo `json:"annotators,omitempty" yaml:"annotators"`
+	Hash       HashInfo      `json:"hash,omitempty" yaml:"hash"`
+	Signature  SignatureInfo `json:"signature,omitempty" yaml:"signature"`
+	Stream     StreamInfo    `json:"stream,omitempty" yaml:"stream"`
+}
+
+type AnnotatorInfo struct {
+	Basic    []contracts.AnnotationType `json:"basic,omitempty" yaml:"basic"`       // Keys for the desired SDK-provided annotators to activate
+	Extended []contracts.AnnotationType `json:"extended,omitempty" yaml:"extended"` // Keys for custom annotators provided by end developer
 }
 
 type LoggingInfo struct {
@@ -36,7 +41,7 @@ type LoggingInfo struct {
 
 func (s *SdkInfo) UnmarshalJSON(data []byte) (err error) {
 	type Alias struct {
-		Annotators []contracts.AnnotationType
+		Annotators AnnotatorInfo
 		Hash       HashInfo
 		Signature  SignatureInfo
 		Stream     StreamInfo
@@ -47,8 +52,10 @@ func (s *SdkInfo) UnmarshalJSON(data []byte) (err error) {
 		return err
 	}
 
-	if len(a.Annotators) > 0 {
-		for _, x := range a.Annotators {
+	if len(a.Annotators.Basic) > 0 {
+		// We don't call Validate() on extended annotators b/c the end developer provides custom implementation
+		// in the client application.
+		for _, x := range a.Annotators.Basic {
 			ok := x.Validate()
 			if !ok {
 				return fmt.Errorf("invalid AnnotationType received %s", x)
@@ -64,10 +71,10 @@ func (s *SdkInfo) UnmarshalJSON(data []byte) (err error) {
 
 func (s *SdkInfo) UnmarshalYAML(data *yaml.Node) (err error) {
 	type Alias struct {
-		Annotators []contracts.AnnotationType `yaml:"annotators"`
-		Hash       HashInfo                   `yaml:"hash"`
-		Signature  SignatureInfo              `yaml:"signature"`
-		Stream     StreamInfo                 `yaml:"stream"`
+		Annotators AnnotatorInfo `yaml:"annotators"`
+		Hash       HashInfo      `yaml:"hash"`
+		Signature  SignatureInfo `yaml:"signature"`
+		Stream     StreamInfo    `yaml:"stream"`
 	}
 	a := Alias{}
 	// Error with unmarshaling
@@ -75,8 +82,10 @@ func (s *SdkInfo) UnmarshalYAML(data *yaml.Node) (err error) {
 		return err
 	}
 
-	if len(a.Annotators) > 0 {
-		for _, x := range a.Annotators {
+	if len(a.Annotators.Basic) > 0 {
+		// We don't call Validate() on extended annotators b/c the end developer provides custom implementation
+		// in the client application.
+		for _, x := range a.Annotators.Basic {
 			ok := x.Validate()
 			if !ok {
 				return fmt.Errorf("invalid AnnotationType received %s", x)

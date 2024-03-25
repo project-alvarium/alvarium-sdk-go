@@ -45,7 +45,7 @@ func TestSDKInfo_AnnotationInvalid(t *testing.T) {
 		t.Fatalf(err.Error())
 	}
 
-	cfg.Annotators = append(cfg.Annotators, "invalid")
+	cfg.Annotators.Basic = append(cfg.Annotators.Basic, "invalid")
 	b, _ = json.Marshal(cfg)
 
 	var x SdkInfo

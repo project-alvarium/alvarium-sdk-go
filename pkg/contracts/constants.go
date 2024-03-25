@@ -11,6 +11,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  *******************************************************************************/
+
 package contracts
 
 type ContentType string
@@ -50,13 +51,14 @@ func (k KeyAlgorithm) Validate() bool {
 type StreamType string
 
 const (
+	ConsoleStream StreamType = "console"
 	MockStream    StreamType = "mock"
 	MqttStream    StreamType = "mqtt"
 	PravegaStream StreamType = "pravega" // Currently unsupported but indicating extension point
 )
 
 func (t StreamType) Validate() bool {
-	return t == MockStream || t == MqttStream || t == PravegaStream
+	return t == MockStream || t == MqttStream || t == PravegaStream || t == ConsoleStream
 }
 
 type AnnotationType string
