@@ -51,6 +51,7 @@ func NewHttpPkiAnnotator(cfg config.SdkInfo) interfaces.Annotator {
 func (a *HttpPkiAnnotator) Do(ctx context.Context, data []byte) (contracts.Annotation, error) {
 	key := annotators.DeriveHash(a.hash, data)
 	hostname, _ := os.Hostname()
+	tag := os.Getenv(contracts.TagEnvKey)
 
 	//Call parser on request
 	req := ctx.Value(contracts.HttpRequestKey)
@@ -77,7 +78,7 @@ func (a *HttpPkiAnnotator) Do(ctx context.Context, data []byte) (contracts.Annot
 		return contracts.Annotation{}, err
 	}
 
-	annotation := contracts.NewAnnotation(string(key), a.hash, hostname, a.kind, ok)
+	annotation := contracts.NewAnnotation(string(key), a.hash, hostname, tag, a.kind, ok)
 	signed, err := annotators.SignAnnotation(a.sign.PrivateKey, annotation)
 	if err != nil {
 		return contracts.Annotation{}, err
