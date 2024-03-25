@@ -50,13 +50,14 @@ func (k KeyAlgorithm) Validate() bool {
 type StreamType string
 
 const (
+	ConsoleStream StreamType = "console"
 	MockStream    StreamType = "mock"
 	MqttStream    StreamType = "mqtt"
 	PravegaStream StreamType = "pravega" // Currently unsupported but indicating extension point
 )
 
 func (t StreamType) Validate() bool {
-	return t == MockStream || t == MqttStream || t == PravegaStream
+	return t == MockStream || t == MqttStream || t == PravegaStream || t == ConsoleStream
 }
 
 type AnnotationType string
