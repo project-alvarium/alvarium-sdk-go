@@ -28,7 +28,7 @@ type SdkInfo struct {
 	Hash       HashInfo                   `json:"hash,omitempty" yaml:"hash"`
 	Signature  SignatureInfo              `json:"signature,omitempty" yaml:"signature"`
 	Stream     StreamInfo                 `json:"stream,omitempty" yaml:"stream"`
-	StackLayer contracts.LayerType        `json:"layer,omitempty" yaml:"layer"`
+	Layer      contracts.LayerType        `json:"layer,omitempty" yaml:"layer"`
 }
 
 type LoggingInfo struct {
@@ -51,8 +51,8 @@ func (s *SdkInfo) UnmarshalJSON(data []byte) (err error) {
 			}
 		}
 
-		if !a.StackLayer.Validate() {
-			return fmt.Errorf("invalid Stack Layer received %s", string(a.StackLayer))
+		if !a.Layer.Validate() {
+			return fmt.Errorf("invalid Stack Layer received %s", string(a.Layer))
 		}
 	}
 

@@ -38,7 +38,7 @@ func NewTpmAnnotator(cfg config.SdkInfo) interfaces.Annotator {
 	a.hash = cfg.Hash.Type
 	a.kind = contracts.AnnotationTPM
 	a.sign = cfg.Signature
-	a.layer = cfg.StackLayer
+	a.layer = cfg.Layer
 	return &a
 }
 

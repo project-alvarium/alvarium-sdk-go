@@ -35,7 +35,7 @@ func NewSourceAnnotator(cfg config.SdkInfo) interfaces.Annotator {
 	a.hash = cfg.Hash.Type
 	a.kind = contracts.AnnotationSource
 	a.sign = cfg.Signature
-	a.layer = cfg.StackLayer
+	a.layer = cfg.Layer
 	return &a
 }
 
