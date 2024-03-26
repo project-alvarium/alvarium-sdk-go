@@ -16,6 +16,7 @@ package contracts
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/oklog/ulid/v2"
@@ -46,14 +47,23 @@ type AnnotationList struct {
 	Items []Annotation `json:"items,omitempty"` // Items contains 0-many annotations
 }
 
+// getTagValue retrieves the value associated with the tag field for a given layer.
+func getTagValue(layer LayerType) string {
+	switch layer {
+	case Application:
+		return os.Getenv(TagEnvKey)
+	}
+	return ""
+}
+
 // NewAnnotation is the constructor for an Annotation instance.
-func NewAnnotation(key string, hash HashType, host string, tag string, layer LayerType, kind AnnotationType, satisfied bool) Annotation {
+func NewAnnotation(key string, hash HashType, host string, layer LayerType, kind AnnotationType, satisfied bool) Annotation {
 	return Annotation{
 		Id:          NewULID(),
 		Key:         key,
 		Hash:        hash,
 		Host:        host,
-		Tag:         tag,
+		Tag:         getTagValue(layer),
 		Layer:       layer,
 		Kind:        kind,
 		IsSatisfied: satisfied,

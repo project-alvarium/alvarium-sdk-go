@@ -47,7 +47,6 @@ func NewPkiAnnotator(cfg config.SdkInfo) interfaces.Annotator {
 func (a *PkiAnnotator) Do(ctx context.Context, data []byte) (contracts.Annotation, error) {
 	key := DeriveHash(a.hash, data)
 	hostname, _ := os.Hostname()
-	tag := os.Getenv(contracts.TagEnvKey)
 
 	var sig signable
 	err := json.Unmarshal(data, &sig)
@@ -59,7 +58,7 @@ func (a *PkiAnnotator) Do(ctx context.Context, data []byte) (contracts.Annotatio
 	if err != nil {
 		return contracts.Annotation{}, err
 	}
-	annotation := contracts.NewAnnotation(string(key), a.hash, hostname, tag, a.layer, a.kind, ok)
+	annotation := contracts.NewAnnotation(string(key), a.hash, hostname, a.layer, a.kind, ok)
 	signed, err := SignAnnotation(a.sign.PrivateKey, annotation)
 	if err != nil {
 		return contracts.Annotation{}, err

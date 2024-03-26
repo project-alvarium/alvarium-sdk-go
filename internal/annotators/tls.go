@@ -31,7 +31,6 @@ func NewTlsAnnotator(cfg config.SdkInfo) interfaces.Annotator {
 func (a *TlsAnnotator) Do(ctx context.Context, data []byte) (contracts.Annotation, error) {
 	key := DeriveHash(a.hash, data)
 	hostname, _ := os.Hostname()
-	tag := os.Getenv(contracts.TagEnvKey)
 	isSatisfied := false
 
 	// Currently this annotator should only be used in the context of HTTP. TLS is also applicable to pub/sub but
@@ -52,7 +51,7 @@ func (a *TlsAnnotator) Do(ctx context.Context, data []byte) (contracts.Annotatio
 			isSatisfied = tls.HandshakeComplete
 		}
 	}
-	annotation := contracts.NewAnnotation(key, a.hash, hostname, tag, a.layer, a.kind, isSatisfied)
+	annotation := contracts.NewAnnotation(key, a.hash, hostname, a.layer, a.kind, isSatisfied)
 	sig, err := SignAnnotation(a.sign.PrivateKey, annotation)
 	if err != nil {
 		return contracts.Annotation{}, err
