@@ -28,6 +28,7 @@ type SdkInfo struct {
 	Hash       HashInfo                   `json:"hash,omitempty" yaml:"hash"`
 	Signature  SignatureInfo              `json:"signature,omitempty" yaml:"signature"`
 	Stream     StreamInfo                 `json:"stream,omitempty" yaml:"stream"`
+	Layer      contracts.LayerType        `json:"layer,omitempty" yaml:"layer"`
 }
 
 type LoggingInfo struct {
@@ -35,15 +36,10 @@ type LoggingInfo struct {
 }
 
 func (s *SdkInfo) UnmarshalJSON(data []byte) (err error) {
-	type Alias struct {
-		Annotators []contracts.AnnotationType
-		Hash       HashInfo
-		Signature  SignatureInfo
-		Stream     StreamInfo
-	}
-	a := Alias{}
-	// Error with unmarshaling
-	if err = json.Unmarshal(data, &a); err != nil {
+	type Alias SdkInfo
+	a := &Alias{}
+
+	if err = json.Unmarshal(data, a); err != nil {
 		return err
 	}
 
@@ -54,11 +50,13 @@ func (s *SdkInfo) UnmarshalJSON(data []byte) (err error) {
 				return fmt.Errorf("invalid AnnotationType received %s", x)
 			}
 		}
+
+		if !a.Layer.Validate() {
+			return fmt.Errorf("invalid Stack Layer received %s", string(a.Layer))
+		}
 	}
-	s.Annotators = a.Annotators
-	s.Hash = a.Hash
-	s.Signature = a.Signature
-	s.Stream = a.Stream
+
+	*s = SdkInfo(*a)
 	return nil
 }
 

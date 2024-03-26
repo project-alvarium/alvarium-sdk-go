@@ -107,3 +107,21 @@ func (d DerivedComponent) Validate() bool {
 	}
 	return false
 }
+
+type LayerType string
+
+const (
+	Application LayerType = "app"
+	CiCd        LayerType = "cicd"
+	Os          LayerType = "os"
+	Host        LayerType = "host"
+)
+
+func (l LayerType) Validate() bool {
+	switch l {
+	case Application, CiCd, Os, Host:
+		return true
+	default:
+		return false
+	}
+}

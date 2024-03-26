@@ -15,10 +15,11 @@ package annotators
 
 import (
 	"context"
+	"os"
+
 	"github.com/project-alvarium/alvarium-sdk-go/pkg/config"
 	"github.com/project-alvarium/alvarium-sdk-go/pkg/contracts"
 	"github.com/project-alvarium/alvarium-sdk-go/pkg/interfaces"
-	"os"
 )
 
 // Default path to a TPM 2.0 device (https://wiki.archlinux.org/title/Trusted_Platform_Module)
@@ -26,9 +27,10 @@ const tpmPath string = "/dev/tpm0"
 
 // TpmAnnotator is used to attest whether or not the host machine has TPM capability for managing secrets
 type TpmAnnotator struct {
-	hash contracts.HashType
-	kind contracts.AnnotationType
-	sign config.SignatureInfo
+	hash  contracts.HashType
+	kind  contracts.AnnotationType
+	sign  config.SignatureInfo
+	layer contracts.LayerType
 }
 
 func NewTpmAnnotator(cfg config.SdkInfo) interfaces.Annotator {
@@ -36,6 +38,7 @@ func NewTpmAnnotator(cfg config.SdkInfo) interfaces.Annotator {
 	a.hash = cfg.Hash.Type
 	a.kind = contracts.AnnotationTPM
 	a.sign = cfg.Signature
+	a.layer = cfg.Layer
 	return &a
 }
 
@@ -55,7 +58,7 @@ func (a *TpmAnnotator) Do(ctx context.Context, data []byte) (contracts.Annotatio
 		}
 	}
 
-	annotation := contracts.NewAnnotation(key, a.hash, hostname, a.kind, isSatisfied)
+	annotation := contracts.NewAnnotation(key, a.hash, hostname, a.layer, a.kind, isSatisfied)
 	sig, err := SignAnnotation(a.sign.PrivateKey, annotation)
 	if err != nil {
 		return contracts.Annotation{}, err

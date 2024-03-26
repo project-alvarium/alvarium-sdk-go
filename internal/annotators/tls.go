@@ -5,16 +5,18 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
+	"os"
+
 	"github.com/project-alvarium/alvarium-sdk-go/pkg/config"
 	"github.com/project-alvarium/alvarium-sdk-go/pkg/contracts"
 	"github.com/project-alvarium/alvarium-sdk-go/pkg/interfaces"
-	"os"
 )
 
 type TlsAnnotator struct {
-	hash contracts.HashType
-	kind contracts.AnnotationType
-	sign config.SignatureInfo
+	hash  contracts.HashType
+	kind  contracts.AnnotationType
+	sign  config.SignatureInfo
+	layer contracts.LayerType
 }
 
 func NewTlsAnnotator(cfg config.SdkInfo) interfaces.Annotator {
@@ -22,6 +24,7 @@ func NewTlsAnnotator(cfg config.SdkInfo) interfaces.Annotator {
 	a.hash = cfg.Hash.Type
 	a.kind = contracts.AnnotationTLS
 	a.sign = cfg.Signature
+	a.layer = cfg.Layer
 	return &a
 }
 
@@ -48,7 +51,7 @@ func (a *TlsAnnotator) Do(ctx context.Context, data []byte) (contracts.Annotatio
 			isSatisfied = tls.HandshakeComplete
 		}
 	}
-	annotation := contracts.NewAnnotation(key, a.hash, hostname, a.kind, isSatisfied)
+	annotation := contracts.NewAnnotation(key, a.hash, hostname, a.layer, a.kind, isSatisfied)
 	sig, err := SignAnnotation(a.sign.PrivateKey, annotation)
 	if err != nil {
 		return contracts.Annotation{}, err
