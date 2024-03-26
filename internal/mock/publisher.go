@@ -25,11 +25,11 @@ type mockPublisher struct {
 	logger interfaces.Logger
 }
 
-func NewMockPublisher(cfg config.MockStreamConfig, logger interfaces.Logger) (interfaces.StreamProvider, error) {
+func NewMockPublisher(cfg config.MockStreamConfig, logger interfaces.Logger) interfaces.StreamProvider {
 	return &mockPublisher{
 		cfg:    cfg,
 		logger: logger,
-	}, nil
+	}
 }
 
 func (p *mockPublisher) Connect() error {

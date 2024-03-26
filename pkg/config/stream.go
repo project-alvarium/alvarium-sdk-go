@@ -67,6 +67,18 @@ func (s *StreamInfo) UnmarshalJSON(data []byte) (err error) {
 		}
 		s.Type = m.Type
 		s.Config = m.Config
+	} else if a.Type == contracts.ConsoleStream {
+		type consoleAlias struct {
+			Type   contracts.StreamType `json:"type,omitempty"`
+			Config MockStreamConfig     `json:"config,omitempty"`
+		}
+		c := consoleAlias{}
+		//Error with unmarshaling
+		if err = json.Unmarshal(data, &c); err != nil {
+			return err
+		}
+		s.Type = c.Type
+		s.Config = MockStreamConfig{}
 	} else {
 		return fmt.Errorf("unhandled StreamInfo.Type value %s", a.Type)
 	}
@@ -113,6 +125,18 @@ func (s *StreamInfo) UnmarshalYAML(data *yaml.Node) (err error) {
 		}
 		s.Type = m.Type
 		s.Config = m.Config
+	} else if a.Type == contracts.ConsoleStream {
+		type consoleAlias struct {
+			Type   contracts.StreamType `json:"type,omitempty"`
+			Config MockStreamConfig     `json:"config,omitempty"`
+		}
+		c := consoleAlias{}
+		//Error with unmarshaling
+		if err = data.Decode(&c); err != nil {
+			return err
+		}
+		s.Type = c.Type
+		s.Config = MockStreamConfig{}
 	} else {
 		return fmt.Errorf("unhandled StreamInfo.Type value %s", a.Type)
 	}

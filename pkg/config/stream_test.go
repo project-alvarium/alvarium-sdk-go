@@ -53,6 +53,11 @@ func TestStreamInfoUnmarshal(t *testing.T) {
 		Config: streamMqtt,
 	}
 
+	pass3 := StreamInfo{
+		Type:   contracts.ConsoleStream,
+		Config: nil,
+	}
+
 	fail := StreamInfo{
 		Type:   "invalid",
 		Config: streamMock,
@@ -65,6 +70,7 @@ func TestStreamInfoUnmarshal(t *testing.T) {
 
 	a, _ := json.Marshal(&pass)
 	b, _ := json.Marshal(&pass2)
+	c, _ := json.Marshal(&pass3)
 	d, _ := json.Marshal(&fail)
 	e, _ := json.Marshal(&fail2)
 
@@ -75,6 +81,7 @@ func TestStreamInfoUnmarshal(t *testing.T) {
 	}{
 		{"valid StreamInfo type #1", a, false},
 		{"valid StreamInfo type #2", b, false},
+		{"valid StreamInfo type #3", c, false},
 		{"invalid StreamInfo type", d, true},
 		{"unhandled StreamInfo type", e, true},
 	}

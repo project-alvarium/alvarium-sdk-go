@@ -17,6 +17,7 @@ package factories
 import (
 	"errors"
 	"fmt"
+	"github.com/project-alvarium/alvarium-sdk-go/internal/console"
 	"net/http"
 
 	"github.com/project-alvarium/alvarium-sdk-go/internal/annotators"
@@ -37,13 +38,15 @@ func NewStreamProvider(cfg config.StreamInfo, logger interfaces.Logger) (interfa
 		if !ok {
 			return nil, errors.New("invalid cast for MockStream")
 		}
-		return mock.NewMockPublisher(info, logger)
+		return mock.NewMockPublisher(info, logger), nil
 	case contracts.MqttStream:
 		info, ok := cfg.Config.(config.MqttConfig)
 		if !ok {
 			return nil, errors.New("invalid cast for MqttStream")
 		}
 		return mqtt.NewMqttPublisher(info, logger), nil
+	case contracts.ConsoleStream:
+		return console.NewConsolePublisher(logger), nil
 	default:
 		return nil, fmt.Errorf("unrecognized config Type value %s", cfg.Type)
 	}
