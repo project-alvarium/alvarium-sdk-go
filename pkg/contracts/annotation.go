@@ -21,6 +21,10 @@ import (
 	"github.com/oklog/ulid/v2"
 )
 
+// TagEnvKey is an environment key used to associate annotations with specific metadata,
+// aiding in the linkage of scores across different layers of the stack. For instance, in the "app" layer,
+// it is utilized to retrieve the commit SHA of the workload where the application is running,
+// which is instrumental in tracing the impact on the current layer's score from the lower layers.
 const TagEnvKey = "TAG"
 
 // Annotation represents an individual criterion of evaluation in regard to a piece of data
