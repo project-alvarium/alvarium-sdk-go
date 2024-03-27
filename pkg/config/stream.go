@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2023 Dell Inc.
+ * Copyright 2024 Dell Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -49,7 +49,7 @@ func (s *StreamInfo) UnmarshalJSON(data []byte) (err error) {
 		}
 
 		m := mqttAlias{}
-		//Error with unmarshaling
+		// Error with unmarshaling
 		if err = json.Unmarshal(data, &m); err != nil {
 			return err
 		}
@@ -61,7 +61,7 @@ func (s *StreamInfo) UnmarshalJSON(data []byte) (err error) {
 			Config MockStreamConfig     `json:"config,omitempty"`
 		}
 		m := mockAlias{}
-		//Error with unmarshaling
+		// Error with unmarshaling
 		if err = json.Unmarshal(data, &m); err != nil {
 			return err
 		}
@@ -73,12 +73,25 @@ func (s *StreamInfo) UnmarshalJSON(data []byte) (err error) {
 			Config MockStreamConfig     `json:"config,omitempty"`
 		}
 		c := consoleAlias{}
-		//Error with unmarshaling
+		// Error with unmarshaling
 		if err = json.Unmarshal(data, &c); err != nil {
 			return err
 		}
 		s.Type = c.Type
 		s.Config = MockStreamConfig{}
+	} else if a.Type == contracts.HederaStream {
+		type hederaAlias struct {
+			Type   contracts.StreamType `json:"type,omitempty"`
+			Config HederaConfig         `json:"config,omitempty"`
+		}
+
+		h := hederaAlias{}
+		// Error with unmarshaling
+		if err = json.Unmarshal(data, &h); err != nil {
+			return err
+		}
+		s.Type = h.Type
+		s.Config = h.Config
 	} else {
 		return fmt.Errorf("unhandled StreamInfo.Type value %s", a.Type)
 	}
@@ -107,19 +120,32 @@ func (s *StreamInfo) UnmarshalYAML(data *yaml.Node) (err error) {
 		}
 
 		m := mqttAlias{}
-		//Error with unmarshaling
+		// Error with unmarshaling
 		if err = data.Decode(&m); err != nil {
 			return err
 		}
 		s.Type = m.Type
 		s.Config = m.Config
+	} else if a.Type == contracts.HederaStream {
+		type hederaAlias struct {
+			Type   contracts.StreamType `yaml:"type"`
+			Config HederaConfig         `yaml:"config"`
+		}
+
+		h := hederaAlias{}
+		// Error with unmarshaling
+		if err = data.Decode(&h); err != nil {
+			return err
+		}
+		s.Type = h.Type
+		s.Config = h.Config
 	} else if a.Type == contracts.MockStream {
 		type mockAlias struct {
 			Type   contracts.StreamType `yaml:"type"`
 			Config MockStreamConfig     `yaml:"config"`
 		}
 		m := mockAlias{}
-		//Error with unmarshaling
+		// Error with unmarshaling
 		if err = data.Decode(&m); err != nil {
 			return err
 		}
@@ -131,7 +157,7 @@ func (s *StreamInfo) UnmarshalYAML(data *yaml.Node) (err error) {
 			Config MockStreamConfig     `json:"config,omitempty"`
 		}
 		c := consoleAlias{}
-		//Error with unmarshaling
+		// Error with unmarshaling
 		if err = data.Decode(&c); err != nil {
 			return err
 		}
@@ -158,6 +184,20 @@ type MqttConfig struct {
 // MockStreamConfig exposes properties to simulate a stream connection for testing.
 type MockStreamConfig struct {
 	Provider ServiceInfo `json:"provider,omitempty" yaml:"provider"`
+}
+
+// configuartion required to init a Hedera client and connect to the consensus nodes
+type HederaConfig struct {
+	NetType                contracts.NetType `json:"netType,omitempty"    yaml:"netType"`
+	AccountId              string            `json:"accountId,omitempty"  yaml:"accountId"`
+	PrivateKeyPath         string            `json:"privateKeyPath,omitempty" yaml:"privateKeyPath"`
+	Topics                 []string          `json:"topics,omitempty"     yaml:"topics"`
+	DefaultMaxTxFee        float64           `json:"defaultMaxTxFee,omitempty" yaml:"defaultMaxTxFee"`
+	DefaultMaxQueryPayment float64           `json:"defaultMaxQueryPayment,omitempty" yaml:"defaultMaxQueryPayment"`
+	ShouldBroadcastTopic   bool              `json:"shouldBroadcastTopic,omitempty" yaml:"shouldBroadcastTopic"`
+
+	// TODO (Ali Amin): Add support for other providers
+	BroadcastStream MqttConfig `json:"broadcastStream,omitempty" yaml:"broadcastStream"`
 }
 
 // ServiceInfo describes a service endpoint that the deployed service is a client of. Right now, this is implicitly
