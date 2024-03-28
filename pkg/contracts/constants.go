@@ -72,6 +72,7 @@ const (
 	AnnotationSourceCode    AnnotationType = "source-code"
 	AnnotationChecksum      AnnotationType = "checksum"
 	AnnotationVulnerability AnnotationType = "vulnerability"
+	AnnotationSBOM          AnnotationType = "sbom"
 )
 
 func (t AnnotationType) Validate() bool {
