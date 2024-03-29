@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2021 Dell Inc.
+ * Copyright 2024 Dell Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -11,12 +11,15 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  *******************************************************************************/
+
 package ed25519
 
 import (
 	"crypto/ed25519"
 	"encoding/hex"
 	"fmt"
+	"github.com/project-alvarium/alvarium-sdk-go/pkg/config"
+	"os"
 )
 
 // provider is a receiver that encapsulates required dependencies.
@@ -27,18 +30,28 @@ func New() *provider {
 	return &provider{}
 }
 
-func (p *provider) Sign(key, content []byte) string {
-	keyDecoded := make([]byte, hex.DecodedLen(len(key)))
-	hex.Decode(keyDecoded, key)
+func (p *provider) Sign(key config.KeyInfo, content []byte) (string, error) {
+	prv, err := os.ReadFile(key.Path)
+	if err != nil {
+		return "", err
+	}
+
+	keyDecoded := make([]byte, hex.DecodedLen(len(prv)))
+	hex.Decode(keyDecoded, prv)
 	signed := ed25519.Sign(keyDecoded, content)
-	return fmt.Sprintf("%x", signed)
+	return fmt.Sprintf("%x", signed), nil
 }
 
-func (p *provider) Verify(key, content, signature []byte) bool {
-	keyDecoded := make([]byte, hex.DecodedLen(len(key)))
-	hex.Decode(keyDecoded, key)
+func (p *provider) Verify(key config.KeyInfo, content, signature []byte) (bool, error) {
+	pub, err := os.ReadFile(key.Path)
+	if err != nil {
+		return false, err
+	}
+
+	keyDecoded := make([]byte, hex.DecodedLen(len(pub)))
+	hex.Decode(keyDecoded, pub)
 
 	sigDecoded := make([]byte, hex.DecodedLen(len(signature)))
 	hex.Decode(sigDecoded, signature)
-	return ed25519.Verify(keyDecoded, content, sigDecoded)
+	return ed25519.Verify(keyDecoded, content, sigDecoded), nil
 }

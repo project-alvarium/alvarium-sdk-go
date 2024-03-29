@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2023 Dell Inc.
+ * Copyright 2024 Dell Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -61,13 +61,9 @@ func (s *SdkInfo) UnmarshalJSON(data []byte) (err error) {
 }
 
 func (s *SdkInfo) UnmarshalYAML(data *yaml.Node) (err error) {
-	type Alias struct {
-		Annotators []contracts.AnnotationType `yaml:"annotators"`
-		Hash       HashInfo                   `yaml:"hash"`
-		Signature  SignatureInfo              `yaml:"signature"`
-		Stream     StreamInfo                 `yaml:"stream"`
-	}
-	a := Alias{}
+	type Alias SdkInfo
+	a := &Alias{}
+
 	// Error with unmarshaling
 	if err = data.Decode(&a); err != nil {
 		return err
@@ -80,7 +76,12 @@ func (s *SdkInfo) UnmarshalYAML(data *yaml.Node) (err error) {
 				return fmt.Errorf("invalid AnnotationType received %s", x)
 			}
 		}
+
+		if !a.Layer.Validate() {
+			return fmt.Errorf("invalid Stack Layer received %s", string(a.Layer))
+		}
 	}
+
 	s.Annotators = a.Annotators
 	s.Hash = a.Hash
 	s.Signature = a.Signature

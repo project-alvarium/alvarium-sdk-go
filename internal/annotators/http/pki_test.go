@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2022 Dell Inc.
+ * Copyright 2024 Dell Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -18,9 +18,11 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"io/ioutil"
+	hash256 "github.com/project-alvarium/alvarium-sdk-go/internal/hashprovider/sha256"
+	"github.com/project-alvarium/alvarium-sdk-go/internal/signprovider/ed25519"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"strconv"
 	"testing"
 	"time"
@@ -33,7 +35,7 @@ import (
 )
 
 func TestHttpPkiAnnotator_Do(t *testing.T) {
-	b, err := ioutil.ReadFile("./test/config.json")
+	b, err := os.ReadFile("./test/config.json")
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
@@ -92,11 +94,13 @@ func TestHttpPkiAnnotator_Do(t *testing.T) {
 		ctx := context.WithValue(req.Context(), contracts.HttpRequestKey, req)
 
 		t.Run(tt.name, func(t *testing.T) {
-			pki := NewHttpPkiAnnotator(cfg)
+			s := ed25519.New()
+			h := hash256.New()
+			pki := NewHttpPkiAnnotator(cfg, h, s)
 			anno, err := pki.Do(ctx, data)
 			test.CheckError(err, tt.expectError, tt.name, t)
 			if err == nil {
-				result, err := annotators.VerifySignature(cfg.Signature.PublicKey, anno)
+				result, err := annotators.VerifySignature(cfg.Signature.PublicKey, s, anno)
 				if err != nil {
 					t.Error(err.Error())
 				} else if !result {

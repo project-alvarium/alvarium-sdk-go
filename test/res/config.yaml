@@ -1,6 +1,7 @@
 annotators:
   - tpm
   - pki
+layer: app
 hash:
   type: "sha256"
 signature:

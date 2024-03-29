@@ -1,4 +1,5 @@
 {
+  "layer": "app",
   "signature": {
     "public": {
       "type": "ed25519",

@@ -1,4 +1,8 @@
 {
+  "layer": "app",
+  "hash": {
+    "type": "sha256"
+  },
   "signature": {
     "public": {
       "type": "ed25519",
