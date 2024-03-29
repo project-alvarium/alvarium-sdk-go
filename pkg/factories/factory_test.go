@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2023 Dell Inc.
+ * Copyright 2024 Dell Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -11,6 +11,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  *******************************************************************************/
+
 package factories
 
 import (
@@ -18,6 +19,7 @@ import (
 	"encoding/json"
 	"log/slog"
 	"net/http/httptest"
+	"os"
 	"testing"
 
 	"github.com/project-alvarium/alvarium-sdk-go/pkg/config"
@@ -66,8 +68,52 @@ func TestStreamProviderFactory(t *testing.T) {
 	}
 }
 
+func TestHashProviderFactory(t *testing.T) {
+	tests := []struct {
+		name         string
+		providerType contracts.HashType
+		expectError  bool
+	}{
+		{"valid md5 type", contracts.MD5Hash, false},
+		{"valid sha256 type", contracts.SHA256Hash, false},
+		{"valid none type", contracts.NoHash, false},
+		{"invalid hash type", "invalid", true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := NewHashProvider(tt.providerType)
+			test.CheckError(err, tt.expectError, tt.name, t)
+		})
+	}
+}
+
+func TestSignatureProviderFactory(t *testing.T) {
+	tests := []struct {
+		name         string
+		providerType contracts.KeyAlgorithm
+		expectError  bool
+	}{
+		{"valid ed25519 type", contracts.KeyEd25519, false},
+		{"invalid hash type", "invalid", true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := NewSignatureProvider(tt.providerType)
+			test.CheckError(err, tt.expectError, tt.name, t)
+		})
+	}
+}
+
 func TestAnnotatorFactory(t *testing.T) {
-	cfg := config.SdkInfo{}
+	b, err := os.ReadFile("../../test/res/config.json")
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	var cfg config.SdkInfo
+	err = json.Unmarshal(b, &cfg)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
 
 	tests := []struct {
 		name        string

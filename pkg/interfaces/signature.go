@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2021 Dell Inc.
+ * Copyright 2024 Dell Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -11,9 +11,16 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  *******************************************************************************/
-package hashprovider
 
-type Provider interface {
-	// Derive converts data to an hash value.
-	Derive(data []byte) string
+package interfaces
+
+import (
+	"github.com/project-alvarium/alvarium-sdk-go/pkg/config"
+)
+
+type SignatureProvider interface {
+	// Sign is the interface method for signing an annotation with a private key
+	Sign(key config.KeyInfo, content []byte) (string, error)
+	// Verify is the interface method using a public key to verify the signature derived from some piece of content
+	Verify(key config.KeyInfo, content, signed []byte) (bool, error)
 }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2022 Dell Inc.
+ * Copyright 2024 Dell Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -16,7 +16,6 @@ package http
 
 import (
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"path/filepath"
 	"strconv"
@@ -64,12 +63,7 @@ func (h *requestHandler) AddSignatureHeaders(ticks time.Time, fields []string, k
 	inputValue = parsed.Seed
 
 	p := ed25519.New()
-	prv, err := ioutil.ReadFile(keys.PrivateKey.Path)
-	if err != nil {
-		return err
-	}
-
-	signature := p.Sign(prv, []byte(inputValue))
+	signature, err := p.Sign(keys.PrivateKey, []byte(inputValue))
 
 	h.Request.Header.Set("Signature", signature)
 	return nil

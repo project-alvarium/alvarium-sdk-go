@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2022 Dell Inc.
+ * Copyright 2024 Dell Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -17,9 +17,9 @@ package http
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"path/filepath"
 	"strconv"
 	"testing"
@@ -31,7 +31,7 @@ import (
 )
 
 func TestHttpPkiAnnotator_AddSignatureHeaders(t *testing.T) {
-	b, err := ioutil.ReadFile("./test/config.json")
+	b, err := os.ReadFile("./test/config.json")
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
