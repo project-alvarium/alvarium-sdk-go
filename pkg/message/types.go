@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2021 Dell Inc.
+ * Copyright 2024 Dell Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -17,14 +17,16 @@ package message
 type SdkAction string
 
 const (
-	ActionCreate  SdkAction = "create"
-	ActionMutate  SdkAction = "mutate"
-	ActionTransit SdkAction = "transit"
-	ActionPublish SdkAction = "publish"
+	ActionCreate    SdkAction = "create"
+	ActionMutate    SdkAction = "mutate"
+	ActionTransit   SdkAction = "transit"
+	ActionPublish   SdkAction = "publish"
+	ActionBroadcast SdkAction = "broadcast"
+	ActionEndStream SdkAction = "end-stream"
 )
 
 func (s SdkAction) validate() bool {
-	if s == ActionCreate || s == ActionMutate || s == ActionTransit || s == ActionPublish {
+	if s == ActionCreate || s == ActionMutate || s == ActionTransit || s == ActionPublish || s == ActionBroadcast || s == ActionEndStream {
 		return true
 	}
 	return false
