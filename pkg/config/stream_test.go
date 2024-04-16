@@ -50,6 +50,15 @@ func TestStreamInfoUnmarshal(t *testing.T) {
 		Topics:         []string{"topic1", "topic2"},
 	}
 
+	localHedera := HederaConfig{
+		NetType:        contracts.Local,
+		Consensus:      ServiceInfo{Host: "127.0.0.1", Port: 50211},
+		Mirror:         ServiceInfo{Host: "127.0.0.1", Port: 5600},
+		AccountId:      "testID",
+		PrivateKeyPath: "testKey",
+		Topics:         []string{"topic1", "topic2"},
+	}
+
 	pass := StreamInfo{
 		Type:   contracts.MockStream,
 		Config: streamMock,
@@ -70,6 +79,11 @@ func TestStreamInfoUnmarshal(t *testing.T) {
 		Config: streamHedera,
 	}
 
+	pass5 := StreamInfo{
+		Type:   contracts.HederaStream,
+		Config: localHedera,
+	}
+
 	fail := StreamInfo{
 		Type:   "invalid",
 		Config: streamMock,
@@ -84,8 +98,9 @@ func TestStreamInfoUnmarshal(t *testing.T) {
 	b, _ := json.Marshal(&pass2)
 	c, _ := json.Marshal(&pass3)
 	d, _ := json.Marshal(&pass4)
-	e, _ := json.Marshal(&fail)
-	f, _ := json.Marshal(&fail2)
+	e, _ := json.Marshal(&pass5)
+	f, _ := json.Marshal(&fail)
+	g, _ := json.Marshal(&fail2)
 
 	tests := []struct {
 		name        string
@@ -96,8 +111,9 @@ func TestStreamInfoUnmarshal(t *testing.T) {
 		{"valid StreamInfo type #2", b, false},
 		{"valid StreamInfo type #3", c, false},
 		{"valid StreamInfo type #4", d, false},
-		{"invalid StreamInfo type", e, true},
-		{"unhandled StreamInfo type", f, true},
+		{"valid StreamInfo type #5", e, false},
+		{"invalid StreamInfo type", f, true},
+		{"unhandled StreamInfo type", g, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -114,6 +130,14 @@ func TestStreamInfoUnmarshal(t *testing.T) {
 					cfg := s.Config.(HederaConfig)
 					if cfg.AccountId != "testID" {
 						t.Errorf("unexpected account ID value %s", cfg.AccountId)
+					}
+					if cfg.NetType == contracts.Local {
+						if cfg.Consensus.Address() != "127.0.0.1:50211" {
+							t.Errorf("unexpected Consensus address %s", cfg.Consensus.Address())
+						}
+						if cfg.Mirror.Address() != "127.0.0.1:5600" {
+							t.Errorf("unexpected Mirror address %s", cfg.Mirror.Address())
+						}
 					}
 				} else if s.Type == contracts.MockStream {
 					cfg := s.Config.(MockStreamConfig)

@@ -40,6 +40,18 @@ func TestStreamProviderFactory(t *testing.T) {
 		Config: config.MqttConfig{},
 	}
 
+	pass3 := config.StreamInfo{
+		Type: contracts.ConsoleStream,
+	}
+
+	pass4 := config.StreamInfo{
+		Type: contracts.HederaStream,
+		Config: config.HederaConfig{
+			NetType:        contracts.Local,
+			AccountId:      "0.0.1001",
+			PrivateKeyPath: "../../test/keys/hedera/hedera.private",
+		},
+	}
 	fail := config.StreamInfo{
 		Type:   "invalid",
 		Config: config.MqttConfig{},
@@ -57,6 +69,8 @@ func TestStreamProviderFactory(t *testing.T) {
 	}{
 		{"valid mock type", pass, false},
 		{"valid mqtt type", pass2, false},
+		{"valid console type", pass3, false},
+		{"valid hedera type", pass4, false},
 		{"invalid random type", fail, true},
 		{"unimplemented pravega type", fail2, true},
 	}

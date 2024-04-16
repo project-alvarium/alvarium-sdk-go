@@ -36,10 +36,7 @@ type HederaPublisher struct {
 	broadcastStream interfaces.StreamProvider
 }
 
-func NewHederaPublisher(
-	cfg config.HederaConfig,
-	logger interfaces.Logger,
-) (interfaces.StreamProvider, error) {
+func NewHederaPublisher(cfg config.HederaConfig, logger interfaces.Logger) (interfaces.StreamProvider, error) {
 	client, err := initHederaClient(cfg)
 	if err != nil {
 		return nil, err
@@ -53,8 +50,8 @@ func NewHederaPublisher(
 	return &p, nil
 }
 
-// hedera client implicitly connects to the hedera net.
-// no need for manual initiation. Instead, topics used to
+// Connect initiates the connection to Hedera via the Hedera Client.
+// No need for manual initiation. Instead, topics used to
 // publish annotations will be broadcasted according to
 // configuration
 func (p *HederaPublisher) Connect() error {
@@ -109,8 +106,7 @@ func (p *HederaPublisher) Publish(msg message.PublishWrapper) error {
 	return nil
 }
 
-// Parties aware of Hedera topics are notified that the stream
-// is closing
+// Close notifies parties aware of Hedera topics that the stream is closing
 func (p *HederaPublisher) Close() error {
 	if p.cfg.ShouldBroadcastTopic {
 		for _, topic := range p.cfg.Topics {
@@ -140,6 +136,8 @@ func initHederaClient(cfg config.HederaConfig) (*hedera.Client, error) {
 		client = hedera.ClientForTestnet()
 	case contracts.Previewnet:
 		client = hedera.ClientForPreviewnet()
+	case contracts.Local:
+		client = clientForLocal(cfg)
 	default:
 		return nil, errors.New("nettype not valid")
 	}
@@ -162,6 +160,19 @@ func initHederaClient(cfg config.HederaConfig) (*hedera.Client, error) {
 	}
 
 	return client, nil
+}
+
+func clientForLocal(cfg config.HederaConfig) *hedera.Client {
+	node := make(map[string]hedera.AccountID, 1)
+	consensus := cfg.Consensus.Address()
+	node[consensus] = hedera.AccountID{Account: 3}
+
+	mirror := cfg.Mirror.Address()
+	mirrorNode := []string{mirror}
+
+	client := hedera.ClientForNetwork(node)
+	client.SetMirrorNetwork(mirrorNode)
+	return client
 }
 
 func readPrivateKey(cfg config.HederaConfig) (hedera.PrivateKey, error) {
