@@ -186,9 +186,12 @@ type MockStreamConfig struct {
 	Provider ServiceInfo `json:"provider,omitempty" yaml:"provider"`
 }
 
-// configuartion required to init a Hedera client and connect to the consensus nodes
+// HederaConfig provides configuartion required to init a Hedera client and connect to the consensus nodes
+
 type HederaConfig struct {
 	NetType                contracts.NetType `json:"netType,omitempty"    yaml:"netType"`
+	Consensus              ServiceInfo       `json:"consensus,omitempty" yaml:"consensus"` // Only populated when NetType is "local"
+	Mirror                 ServiceInfo       `json:"mirror,omitempty"   yaml:"mirror"`     // Only populated when NetType is "local"
 	AccountId              string            `json:"accountId,omitempty"  yaml:"accountId"`
 	PrivateKeyPath         string            `json:"privateKeyPath,omitempty" yaml:"privateKeyPath"`
 	Topics                 []string          `json:"topics,omitempty"     yaml:"topics"`
@@ -211,4 +214,9 @@ type ServiceInfo struct {
 // Uri constructs a string from the populated elements of the ServiceInfo
 func (s ServiceInfo) Uri() string {
 	return fmt.Sprintf("%s://%s:%v", s.Protocol, s.Host, s.Port)
+}
+
+// Address constructs a string representing the hostname/IP and port of a given endpoint
+func (s ServiceInfo) Address() string {
+	return fmt.Sprintf("%s:%v", s.Host, s.Port)
 }

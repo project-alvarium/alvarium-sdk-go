@@ -11,6 +11,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  *******************************************************************************/
+
 package contracts
 
 type ContentType string
@@ -25,10 +26,11 @@ const (
 	Mainnet    NetType = "mainnet"
 	Testnet    NetType = "testnet"
 	Previewnet NetType = "previewnet"
+	Local      NetType = "local"
 )
 
 func (t NetType) Validate() bool {
-	if t == Mainnet || t == Testnet || t == Previewnet {
+	if t == Mainnet || t == Testnet || t == Previewnet || t == Local {
 		return true
 	}
 	return false
