@@ -163,8 +163,13 @@ func TestRequestHandlerFactory(t *testing.T) {
 	req := httptest.NewRequest("POST", "/foo?param=value&foo=bar&baz=batman", bytes.NewReader(b))
 
 	cfg := config.SignatureInfo{}
-	pass := cfg
-	pass.PrivateKey.Type = contracts.KeyEd25519
+	passEd25519 := cfg
+	passEd25519.PrivateKey.Type = contracts.KeyEd25519
+	passEcdsaX509 := cfg
+	passEcdsaX509.PrivateKey.Type = contracts.KeyEcdsaX509
+	passEcdsaSecp256k1 := cfg
+	passEcdsaSecp256k1.PrivateKey.Type = contracts.KeyEcdsaSecp256k1
+
 	fail := cfg
 	fail.PublicKey.Type = "invalid"
 
@@ -173,7 +178,10 @@ func TestRequestHandlerFactory(t *testing.T) {
 		cfg         config.SignatureInfo
 		expectError bool
 	}{
-		{"valid ed25519 type", pass, false},
+		{"valid ed25519 type", passEd25519, false},
+		{"valid ecdsa-x509 type", passEcdsaX509, false},
+		{"valid ecdsa-secp256k1 type", passEcdsaSecp256k1, false},
+
 		{"invalid key type", fail, true},
 	}
 	for _, tt := range tests {

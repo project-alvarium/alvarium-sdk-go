@@ -1,0 +1,13 @@
+{
+  "layer": "app",
+  "signature": {
+    "public": {
+      "type": "ecdsa-x509",
+      "path": "../../../../test/keys/ecdsa/x509/public.pem"
+    },
+    "private": {
+      "type": "ecdsa-x509",
+      "path": "../../../../test/keys/ecdsa/x509/private.pem"
+    }
+  }
+}
