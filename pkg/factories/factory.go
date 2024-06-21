@@ -29,6 +29,8 @@ import (
 	"github.com/project-alvarium/alvarium-sdk-go/internal/hedera"
 	"github.com/project-alvarium/alvarium-sdk-go/internal/mock"
 	"github.com/project-alvarium/alvarium-sdk-go/internal/mqtt"
+	"github.com/project-alvarium/alvarium-sdk-go/internal/signprovider/ecdsa/secp256k1"
+	"github.com/project-alvarium/alvarium-sdk-go/internal/signprovider/ecdsa/x509"
 	"github.com/project-alvarium/alvarium-sdk-go/internal/signprovider/ed25519"
 	"github.com/project-alvarium/alvarium-sdk-go/pkg/config"
 	"github.com/project-alvarium/alvarium-sdk-go/pkg/contracts"
@@ -87,6 +89,10 @@ func NewSignatureProvider(k contracts.KeyAlgorithm) (interfaces.SignatureProvide
 	switch k {
 	case contracts.KeyEd25519:
 		return ed25519.New(), nil
+	case contracts.KeyEcdsaX509:
+		return x509.New(), nil
+	case contracts.KeyEcdsaSecp256k1:
+		return secp256k1.New(), nil
 	default:
 		return nil, fmt.Errorf("unrecognized key algorithm value %s", k)
 	}
@@ -126,7 +132,11 @@ func NewRequestHandler(request *http.Request, keys config.SignatureInfo) (interf
 
 	switch keys.PrivateKey.Type {
 	case contracts.KeyEd25519:
-		r = handler.NewEd25519RequestHandler(request)
+		r = handler.NewSignatureRequestHandler(request, ed25519.New())
+	case contracts.KeyEcdsaX509:
+		r = handler.NewSignatureRequestHandler(request, x509.New())
+	case contracts.KeyEcdsaSecp256k1:
+		r = handler.NewSignatureRequestHandler(request, secp256k1.New())
 	default:
 		return nil, fmt.Errorf("unrecognized Key Type %s", keys.PrivateKey.Type)
 	}

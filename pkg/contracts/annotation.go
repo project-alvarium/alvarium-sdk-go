@@ -94,9 +94,10 @@ func (a *Annotation) UnmarshalJSON(data []byte) (err error) {
 		return fmt.Errorf("invalid HashType value provided %s", x.Hash)
 	}
 
-	if !x.Kind.Validate() {
-		return fmt.Errorf("invalid AnnotationType value provided %s", x.Kind)
-	}
+	//TODO: Figure out a way to support validation including custom annotations
+	//if !x.Kind.Validate() {
+	//	return fmt.Errorf("invalid AnnotationType value provided %s", x.Kind)
+	//}
 
 	a.Id = x.Id
 	a.Key = x.Key

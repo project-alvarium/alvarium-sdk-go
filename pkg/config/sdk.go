@@ -44,12 +44,12 @@ func (s *SdkInfo) UnmarshalJSON(data []byte) (err error) {
 	}
 
 	if len(a.Annotators) > 0 {
-		for _, x := range a.Annotators {
-			ok := x.Validate()
-			if !ok {
-				return fmt.Errorf("invalid AnnotationType received %s", x)
-			}
-		}
+		//for _, x := range a.Annotators {
+		//	ok := x.Validate()
+		//	if !ok {
+		//		return fmt.Errorf("invalid AnnotationType received %s", x)
+		//	}
+		//}
 
 		if !a.Layer.Validate() {
 			return fmt.Errorf("invalid Stack Layer received %s", string(a.Layer))
@@ -70,12 +70,12 @@ func (s *SdkInfo) UnmarshalYAML(data *yaml.Node) (err error) {
 	}
 
 	if len(a.Annotators) > 0 {
-		for _, x := range a.Annotators {
-			ok := x.Validate()
-			if !ok {
-				return fmt.Errorf("invalid AnnotationType received %s", x)
-			}
-		}
+		//for _, x := range a.Annotators {
+		//	ok := x.Validate()
+		//	if !ok {
+		//		return fmt.Errorf("invalid AnnotationType received %s", x)
+		//	}
+		//}
 
 		if !a.Layer.Validate() {
 			return fmt.Errorf("invalid Stack Layer received %s", string(a.Layer))

@@ -1,0 +1,13 @@
+{
+  "layer": "app",
+  "signature": {
+    "public": {
+      "type": "ecdsa-secp256k1",
+      "path": "../../../../test/keys/ecdsa/secp256k1/public.key"
+    },
+    "private": {
+      "type": "ecdsa-secp256k1",
+      "path": "../../../../test/keys/ecdsa/secp256k1/private.key"
+    }
+  }
+}
