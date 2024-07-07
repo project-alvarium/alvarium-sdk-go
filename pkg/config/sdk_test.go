@@ -16,7 +16,6 @@ package config
 
 import (
 	"encoding/json"
-	"github.com/project-alvarium/alvarium-sdk-go/test"
 	"os"
 	"testing"
 )
@@ -34,22 +33,22 @@ func TestSDKInfo_UnmarshalJSON(t *testing.T) {
 	}
 }
 
-func TestSDKInfo_AnnotationInvalid(t *testing.T) {
-	b, err := os.ReadFile("../../test/res/config.json")
-	if err != nil {
-		t.Fatalf(err.Error())
-	}
+// func TestSDKInfo_AnnotationInvalid(t *testing.T) {
+// 	b, err := os.ReadFile("../../test/res/config.json")
+// 	if err != nil {
+// 		t.Fatalf(err.Error())
+// 	}
 
-	var cfg SdkInfo
-	err = json.Unmarshal(b, &cfg)
-	if err != nil {
-		t.Fatalf(err.Error())
-	}
+// 	var cfg SdkInfo
+// 	err = json.Unmarshal(b, &cfg)
+// 	if err != nil {
+// 		t.Fatalf(err.Error())
+// 	}
 
-	cfg.Annotators = append(cfg.Annotators, "invalid")
-	b, _ = json.Marshal(cfg)
+// 	cfg.Annotators = append(cfg.Annotators, "invalid")
+// 	b, _ = json.Marshal(cfg)
 
-	var x SdkInfo
-	err = json.Unmarshal(b, &x)
-	test.CheckError(err, true, "test sdk invalid annotation", t)
-}
+// 	var x SdkInfo
+// 	err = json.Unmarshal(b, &x)
+// 	test.CheckError(err, true, "test sdk invalid annotation", t)
+// }

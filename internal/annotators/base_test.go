@@ -15,6 +15,8 @@ package annotators
 
 import (
 	"encoding/json"
+	"testing"
+
 	"github.com/project-alvarium/alvarium-sdk-go/internal/hashprovider/md5"
 	"github.com/project-alvarium/alvarium-sdk-go/internal/hashprovider/none"
 	sha2562 "github.com/project-alvarium/alvarium-sdk-go/internal/hashprovider/sha256"
@@ -24,7 +26,6 @@ import (
 	"github.com/project-alvarium/alvarium-sdk-go/pkg/interfaces"
 	"github.com/project-alvarium/alvarium-sdk-go/test"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestDeriveHash(t *testing.T) {
@@ -68,7 +69,7 @@ func TestSignAnnotation(t *testing.T) {
 	//I'm using a JSON representation here b/c calling the Annotation constructor will populate different ID and Timestamp values each time.
 	//Thus the resulting signature will be different for each test run if I don't use something static.
 	var a contracts.Annotation
-	sample := "{\"id\":\"01F9MS7QVH8Z3KMW757RGFKCBG\",\"key\":\"dummyKey\",\"hash\":\"none\",\"host\":\"ubuntu\",\"type\":\"tpm\",\"timestamp\":\"2021-07-02T18:35:36.561920812-05:00\"}"
+	sample := "{\"id\":\"01F9MS7QVH8Z3KMW757RGFKCBG\",\"key\":\"dummyKey\",\"hash\":\"none\",\"host\":\"ubuntu\",\"tag\":\"e5ec0811a099446d00006f5d53f3b054f6733112\",\"layer\":\"app\",\"kind\":\"tpm\",\"isSatisfied\":false,\"timestamp\":\"2021-07-02T18:35:36.561920812-05:00\"}"
 	json.Unmarshal([]byte(sample), &a)
 
 	tests := []struct {
@@ -80,7 +81,7 @@ func TestSignAnnotation(t *testing.T) {
 		expectError bool
 	}{
 		{"valid ed25519 signature", private, a,
-			"dafcee0a1844b9c5c0db87252067afc06853afefa14b1711a7c24a6eabc6f6b76b91f8aae2ce54f74b54500dbaf303fbb23dc550e151cfe03cef68ae26a22306",
+			"969307e1116e607f0568d354dc156854b0f9977c95779038dc98c1dd177729644470a51e3d647e50a43cb338a803a1406a6feb3ff748586ee3c75847309de802",
 			ed25519.New(), false},
 	}
 	for _, tt := range tests {
