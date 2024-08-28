@@ -52,6 +52,12 @@ func getTagValue(layer LayerType) string {
 	switch layer {
 	case Application:
 		return os.Getenv(TagEnvKey)
+	case Os:
+		hostname, _ := os.Hostname()
+		return hostname
+	case Host:
+		hostname, _ := os.Hostname()
+		return hostname
 	}
 	return ""
 }
