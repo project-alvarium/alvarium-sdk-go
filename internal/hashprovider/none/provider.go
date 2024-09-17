@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2021 Dell Inc.
+ * Copyright 2024 Dell Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -13,6 +13,8 @@
  *******************************************************************************/
 package none
 
+import "strings"
+
 // provider is a receiver that encapsulates required dependencies.
 type provider struct{}
 
@@ -23,5 +25,5 @@ func New() *provider {
 
 // Derive converts data to an identity value.
 func (*provider) Derive(data []byte) string {
-	return string(data)
+	return strings.ToUpper(string(data))
 }

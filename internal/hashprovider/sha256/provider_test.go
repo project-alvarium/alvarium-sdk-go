@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2021 Dell Inc.
+ * Copyright 2024 Dell Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -14,8 +14,9 @@
 package sha256
 
 import (
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 // newSUT returns a new system under test.
@@ -33,22 +34,22 @@ func TestProvider_Derive(t *testing.T) {
 		{
 			name:     "text variation 1",
 			data:     []byte("foo"),
-			expected: "2c26b46b68ffc68ff99b453c1d30413413422d706483bfa0f98a5e886266e7ae",
+			expected: "2C26B46B68FFC68FF99B453C1D30413413422D706483BFA0F98A5E886266E7AE",
 		},
 		{
 			name:     "text variation 2",
 			data:     []byte("bar"),
-			expected: "fcde2b2edba56bf408601fb721fe9b5c338d10ee429ea04fae5511b68fbf8fb9",
+			expected: "FCDE2B2EDBA56BF408601FB721FE9B5C338D10EE429EA04FAE5511B68FBF8FB9",
 		},
 		{
 			name:     "text variation 3",
 			data:     []byte("baz"),
-			expected: "baa5a0964d3320fbc0c6a922140453c8513ea24ab8fd0577034804a967248096",
+			expected: "BAA5A0964D3320FBC0C6A922140453C8513EA24AB8FD0577034804A967248096",
 		},
 		{
 			name:     "byte sequence",
 			data:     []byte{1, 2, 3, 4, 5, 6, 7, 8, 9, 0},
-			expected: "9a89c68c4c5e28b8c4a5567673d462fff515db46116f9900624d09c474f593fb",
+			expected: "9A89C68C4C5E28B8C4A5567673D462FFF515DB46116F9900624D09C474F593FB",
 		},
 	}
 
