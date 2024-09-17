@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2021 Dell Inc.
+ * Copyright 2024 Dell Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -15,9 +15,11 @@ package none
 
 import (
 	"fmt"
+	"strings"
+	"testing"
+
 	"github.com/project-alvarium/alvarium-sdk-go/test"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 // newSUT returns a new system under test.
@@ -36,7 +38,7 @@ func TestProvider_Derive(t *testing.T) {
 
 				result := sut.Derive([]byte(data))
 
-				assert.Equal(t, data, result)
+				assert.Equal(t, strings.ToUpper(data), result)
 			},
 		)
 	}

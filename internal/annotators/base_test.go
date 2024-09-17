@@ -15,6 +15,7 @@ package annotators
 
 import (
 	"encoding/json"
+	"strings"
 	"testing"
 
 	"github.com/project-alvarium/alvarium-sdk-go/internal/hashprovider/md5"
@@ -30,15 +31,15 @@ import (
 
 func TestDeriveHash(t *testing.T) {
 	noneInput := test.FactoryRandomFixedLengthString(64, test.AlphanumericCharset)
-	noneOutput := noneInput
+	noneOutput := strings.ToUpper(noneInput)
 	noHash := none.New()
 
 	md5Input := []byte("foo")
-	md5Output := "acbd18db4cc2f85cedef654fccc4a4d8"
+	md5Output := "ACBD18DB4CC2F85CEDEF654FCCC4A4D8"
 	md5Hash := md5.New()
 
 	sha256Input := []byte("bar")
-	sha256Output := "fcde2b2edba56bf408601fb721fe9b5c338d10ee429ea04fae5511b68fbf8fb9"
+	sha256Output := "FCDE2B2EDBA56BF408601FB721FE9B5C338D10EE429EA04FAE5511B68FBF8FB9"
 	sha256Hash := sha2562.New()
 
 	tests := []struct {
@@ -66,8 +67,8 @@ func TestSignAnnotation(t *testing.T) {
 		Path: "../../test/keys/ed25519/private.key",
 	}
 
-	//I'm using a JSON representation here b/c calling the Annotation constructor will populate different ID and Timestamp values each time.
-	//Thus the resulting signature will be different for each test run if I don't use something static.
+	// I'm using a JSON representation here b/c calling the Annotation constructor will populate different ID and Timestamp values each time.
+	// Thus the resulting signature will be different for each test run if I don't use something static.
 	var a contracts.Annotation
 	sample := "{\"id\":\"01F9MS7QVH8Z3KMW757RGFKCBG\",\"key\":\"dummyKey\",\"hash\":\"none\",\"host\":\"ubuntu\",\"tag\":\"e5ec0811a099446d00006f5d53f3b054f6733112\",\"layer\":\"app\",\"kind\":\"tpm\",\"isSatisfied\":false,\"timestamp\":\"2021-07-02T18:35:36.561920812-05:00\"}"
 	json.Unmarshal([]byte(sample), &a)
@@ -80,9 +81,11 @@ func TestSignAnnotation(t *testing.T) {
 		sigProvider interfaces.SignatureProvider
 		expectError bool
 	}{
-		{"valid ed25519 signature", private, a,
+		{
+			"valid ed25519 signature", private, a,
 			"969307e1116e607f0568d354dc156854b0f9977c95779038dc98c1dd177729644470a51e3d647e50a43cb338a803a1406a6feb3ff748586ee3c75847309de802",
-			ed25519.New(), false},
+			ed25519.New(), false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

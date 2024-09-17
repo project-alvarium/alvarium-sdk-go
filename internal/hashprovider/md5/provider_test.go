@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2021 Dell Inc.
+ * Copyright 2024 Dell Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -14,8 +14,9 @@
 package md5
 
 import (
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 // newSUT returns a new system under test.
@@ -33,22 +34,22 @@ func TestProvider_Derive(t *testing.T) {
 		{
 			name:     "text variation 1",
 			data:     []byte("foo"),
-			expected: "acbd18db4cc2f85cedef654fccc4a4d8",
+			expected: "ACBD18DB4CC2F85CEDEF654FCCC4A4D8",
 		},
 		{
 			name:     "text variation 2",
 			data:     []byte("bar"),
-			expected: "37b51d194a7513e45b56f6524f2d51f2",
+			expected: "37B51D194A7513E45B56F6524F2D51F2",
 		},
 		{
 			name:     "text variation 3",
 			data:     []byte("baz"),
-			expected: "73feffa4b7f6bb68e44cf984c85f6e88",
+			expected: "73FEFFA4B7F6BB68E44CF984C85F6E88",
 		},
 		{
 			name:     "byte sequence",
 			data:     []byte{1, 2, 3, 4, 5, 6, 7, 8, 9, 0},
-			expected: "7f63cb6d067972c3f34f094bb7e776a8",
+			expected: "7F63CB6D067972C3F34F094BB7E776A8",
 		},
 	}
 
